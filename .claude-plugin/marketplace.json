@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Public Claude Code marketplace for the brieflow-auto plugin (active pipeline management for brieflow optical pooled screens).",
-    "version": "0.5.43"
+    "version": "0.5.44"
   },
   "plugins": [
     {
       "name": "brieflow-auto",
       "source": "./plugins/brieflow-auto",
       "description": "Active pipeline management for brieflow optical pooled screens \u2014 setup, per-phase notebook configuration, preflight, the per-phase runner, QC gating, memory tuning, issue filing and harness development.",
-      "version": "0.5.43",
+      "version": "0.5.44",
       "category": "lab-tools"
     }
   ]
