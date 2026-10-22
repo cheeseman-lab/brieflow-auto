@@ -14,6 +14,16 @@ sbs:
     any_map_rate:     {min: 0.30, warn: 0.50}
     cell_retention:   {min: 0.80, warn: 0.90}
     nuclei_retention: {min: 0.80, warn: 0.90}
+    # Combinatorial `frac` runs only (brieflow_base_composition). A cycle with all three
+    # dyes on ties C and A on a G=[]/T/C/A code; without `combinatorial.ambiguous_call: N`
+    # the tie is called C. Measured 2026-10-21 on one plate set: 24-42% of bright cycles
+    # all-on, C +0.18 to +0.34 over the library share before the fix; after it, C at or
+    # under the library share and the largest excess 0.14.
+    all_on_unresolved_rate: {max: 0.10, warn: 0.02}
+    base_excess_max:        {max: 0.30, warn: 0.15}
+    # 1 = ambiguous_call is N in config but no read carries an N: the installed brieflow
+    # does not honour the key (e.g. an env importing another checkout's lib).
+    ambiguous_n_inert:      {max: 0}
   sweep_qc:
     cycle_dapi_shift_residual_max_px: {max: 10.0}
     # intra_cycle_channel_shift_residual_max_px is INFO-ONLY (parsed, never gated) — F02: diagnostic of optics, not basecall correctness

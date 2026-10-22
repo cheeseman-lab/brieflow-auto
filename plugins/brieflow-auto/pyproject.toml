@@ -49,6 +49,7 @@ py-modules = [
     "_ws_holder",
     "brieflow_aggregate_efficiency",
     "brieflow_backend",
+    "brieflow_base_composition",
     "brieflow_base_order_probe",
     "brieflow_buckets",
     "brieflow_cell_runner",
