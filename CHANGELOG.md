@@ -18,6 +18,10 @@ calls it C, so the plate reads C-rich with no error.
   excess 0.14. Reads come from a sample of `reads.parquet`, the all-on rate from a sample of
   per-tile `bases.tsv` under the caller's own blank and fraction rules; reads with no signal
   are left out.
+- **Interview rows** for the SBS notebook's `AMBIGUOUS_CALL` (lab default `"N"`, frac only),
+  `N_WILDCARD` (1, frac only) and `RECOMB_MAX_N` (2, multi only), with their `lab_defaults.yaml`
+  values and spec-CSV rows, so the notebook-parameter coverage check passes on the notebook that
+  adds them (brieflow-analysis #130).
 
 ## 0.5.43 — 2026-10-22
 
