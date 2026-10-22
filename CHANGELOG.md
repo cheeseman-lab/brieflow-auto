@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.5.44 — 2026-10-22
+
+SBS QC reads the called-base mix of a combinatorial `frac` run (`brieflow_base_composition.py`,
+wired into `brieflow_qc.extract_sbs_qc`). On a three-dye code with G blank, a cycle with all
+three dyes on is equally near C and A, and without `combinatorial.ambiguous_call: N` brieflow
+calls it C, so the plate reads C-rich with no error.
+
+- **New SBS gates** (`data/qc_gates.yaml`): `all_on_unresolved_rate` (bright cycles with every
+  code dye on, when `ambiguous_call` is not `N`; fail above 0.10), `base_excess_max` (largest
+  called share over the share the barcode library expects at that cycle; warn above 0.15, fail
+  above 0.30) and `ambiguous_n_inert` (fails when `ambiguous_call: N` is configured but no read
+  carries an N — the installed brieflow is not the one the config was written for).
+  `n_call_rate` and `all_on_rate` are reported ungated.
+- **Measured** on one plate set before the brieflow N fix: 24-42% of bright cycles all-on, C
+  +0.18 to +0.34 over the library share; after it, all-on cycles called N and the largest
+  excess 0.14. Reads come from a sample of `reads.parquet`, the all-on rate from a sample of
+  per-tile `bases.tsv` under the caller's own blank and fraction rules; reads with no signal
+  are left out.
+- **Interview rows** for the SBS notebook's `AMBIGUOUS_CALL` (lab default `"N"`, frac only),
+  `N_WILDCARD` (1, frac only) and `RECOMB_MAX_N` (2, multi only), with their `lab_defaults.yaml`
+  values and spec-CSV rows, so the notebook-parameter coverage check passes on the notebook that
+  adds them (brieflow-analysis #130).
+- **Chance-level floor** on `single_gene_map_rate` (fail below 0.02, warn below 0.05). The gated
+  `single_map_rate` counts cells with one dominant read whether or not it is in the library, so a
+  plate decoding at chance passed it (0.339 single-barcode, 0.001 gene). Ten combinatorial plates
+  run 0.107-0.489, the screen behind the 2026-08-28 call 0.164; only the chance-level plate fails.
+
 ## 0.5.43 — 2026-10-22
 
 First public release, under the MIT license (the same as brieflow). Site-specific paths and

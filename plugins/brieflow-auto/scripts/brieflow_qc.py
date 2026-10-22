@@ -182,9 +182,11 @@ def _eval_files(phase_root: Path, eval_type: str, basename: str) -> list[Path]:
     return sorted(base.rglob(f"*{basename}")) if base.exists() else []
 
 
-def extract_sbs_qc(phase_root: Path) -> list[Metric]:
+def extract_sbs_qc(phase_root: Path, config: dict | None = None) -> list[Metric]:
     """phase_root = brieflow_output/sbs. Reads mapping_overview.tsv (count-
-    weighted single/any map rate, total cells) + segmentation_overview.tsv."""
+    weighted single/any map rate, total cells) + segmentation_overview.tsv, and for a
+    combinatorial `frac` run the called-base composition and all-on rate
+    (brieflow_base_composition)."""
     metrics: list[Metric] = []
     mp_files = _eval_files(phase_root, "mapping", "mapping_overview.tsv")
     if mp_files:
@@ -194,7 +196,8 @@ def extract_sbs_qc(phase_root: Path) -> list[Metric]:
         # gene-level columns lose 55-68% of barcode-mapped cells and report
         # impossible >100% per-well rates on some plates (2026-08-28: one plate
         # 0.582 barcode vs 0.164 gene; 8 wells >100% on another), so gating on them
-        # fails good screens. Gene-level stays as an ungated metric.
+        # fails good screens. Gene-level gets only a low floor (qc_gates.yaml) that
+        # catches decoding at chance: many single-barcode cells, almost none in the library.
         single = float(map_df["1_barcode_cells__count"].sum())
         anyb = float(map_df["1_or_more_barcodes__count"].sum())
         src = str(mp_files[0])
@@ -233,7 +236,28 @@ def extract_sbs_qc(phase_root: Path) -> list[Metric]:
                 Metric("nuclei_retention", (final_nuclei / init_nuclei) if init_nuclei else None,
                        "rate", "phase", source_file=src)
             )
+    metrics += _base_composition_metrics(phase_root, config)
     return metrics
+
+
+def _base_composition_metrics(phase_root: Path, config: dict | None) -> list[Metric]:
+    """Composition metrics for a combinatorial `frac` run; none for any other chemistry
+    or when the run's config.yml is not beside brieflow_output/."""
+    from brieflow_base_composition import METRICS, base_composition
+
+    analysis_dir = phase_root.parent.parent
+    if config is None:
+        fp = analysis_dir / "config" / "config.yml"
+        if not fp.exists():
+            return []
+        config = _read_config(fp)
+    rep = base_composition(analysis_dir, config)
+    if rep["verdict"] != "measured":
+        return []
+    src = (rep.get("reads_files") or [""])[0]
+    units = {"ambiguous_n_inert": "flag"}
+    return [Metric(m, rep.get(m), units.get(m, "rate"), "phase", source_file=src)
+            for m in METRICS]
 
 
 def _weighted_mean(df, value_col: str, weight_col: str) -> float | None:
@@ -430,6 +454,8 @@ def build_phase_qc(
             tol = int(cd.get("genes_per_cluster_tolerance", 5))
         cluster_defaults = {"target_genes_per_cluster": tgpc, "genes_per_cluster_tolerance": tol}
         metrics = extractor(phase_root, target_genes_per_cluster=tgpc)
+    elif phase == "sbs":
+        metrics = extractor(phase_root, config=config)
     else:
         metrics = extractor(phase_root)
 

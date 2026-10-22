@@ -1,7 +1,7 @@
 {
   "_schema_version": 1,
-  "_csv_sha": "506cdc2cab19",
-  "_n_params": 325,
+  "_csv_sha": "4071e66fbc0d",
+  "_n_params": 328,
   "_generated_from": "2026-06-07-interview-spec.csv",
   "_screen_id": null,
   "_created_at": null,
@@ -1704,6 +1704,38 @@
       }
     },
     {
+      "notebook": "sbs",
+      "param_name": "RECOMB_MAX_N",
+      "bucket": "override",
+      "default": "\u2014",
+      "derivation_source": "lab-default: 2",
+      "written_to_config": "sbs.recomb_max_n",
+      "notes": "multi mode: N cycles skipped in the recomb check  ||  Up to this many N cycles in the recombination barcode are skipped when it is compared with the expected one; with more, recombination is left undetermined.",
+      "value": null,
+      "value_source": null,
+      "set_at": null,
+      "gating": {
+        "param": "BARCODE_TYPE",
+        "equals": "multi"
+      }
+    },
+    {
+      "notebook": "sbs",
+      "param_name": "N_WILDCARD",
+      "bucket": "override",
+      "default": "\u2014",
+      "derivation_source": "lab-default: 1",
+      "written_to_config": "sbs.n_wildcard",
+      "notes": "N cycles resolved against the library; 0 turns off  ||  A barcode with up to this many N cycles maps to the one library barcode that agrees at every other cycle; unmapped when none or several agree. Only frac calls N.",
+      "value": null,
+      "value_source": null,
+      "set_at": null,
+      "gating": {
+        "param": "CALL_READS_METHOD",
+        "equals": "frac"
+      }
+    },
+    {
       "notebook": "phenotype",
       "param_name": "CONFIG_FILE_PATH",
       "bucket": "override",
@@ -3119,6 +3151,22 @@
       "value": null,
       "value_source": null,
       "set_at": null
+    },
+    {
+      "notebook": "sbs",
+      "param_name": "AMBIGUOUS_CALL",
+      "bucket": "override",
+      "default": "\u2014",
+      "derivation_source": "lab-default: N",
+      "written_to_config": "sbs.combinatorial.ambiguous_call",
+      "notes": "\"N\" | \"nearest\"  ||  What the frac caller calls a cycle whose dye state is equally near two or more bases, e.g. all dyes ON when two bases share all but one dye. \"N\" is a no-call that N_WILDCARD and RECOMB_MAX_N resolve; \"nearest\" gives every tie to the first base in code order, which over-calls that base.",
+      "value": null,
+      "value_source": null,
+      "set_at": null,
+      "gating": {
+        "param": "CALL_READS_METHOD",
+        "equals": "frac"
+      }
     },
     {
       "notebook": "sbs",
