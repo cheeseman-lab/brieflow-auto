@@ -1,0 +1,405 @@
+{
+  "aggregate": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 25200,
+    "obs_cap_at_peak_mb": 980000.0,
+    "obs_n": 3,
+    "obs_peak_rss_mb": 16796.30859375,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "align": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 55900,
+    "obs_cap_at_peak_mb": 980000.0,
+    "obs_n": 3,
+    "obs_peak_rss_mb": 37237.1015625,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "benchmark_clusters": {
+    "WARNING": "4x library-size bump applied 2026-05-04. Pre-bump rec=10000MB. Reason: v3b ran on essential-wide library; real libraries are ~4x larger so per-job feature table size scales proportionally.",
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 40000,
+    "obs_cap_at_peak_mb": 0,
+    "obs_n": 0,
+    "obs_peak_rss_mb": 0,
+    "obs_source": "manual_override_library_4x_2026-05-04",
+    "overhead": "explicit_4x_library_bump",
+    "tier": "well"
+  },
+  "bootstrap_gene": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 8000,
+    "obs_cap_at_peak_mb": 3000.0,
+    "obs_n": 504,
+    "obs_peak_rss_mb": 868.47265625,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well",
+    "_raised": "2026-10-04: a 5-channel combo OOM-killed at 3100 MB; the retry peaked at 6377 MB."
+  },
+  "calculate_ic_phenotype": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 323100,
+    "obs_cap_at_peak_mb": 322900.0,
+    "obs_n": 6,
+    "obs_peak_rss_mb": 215377.953125,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "calculate_ic_sbs": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 26900,
+    "obs_cap_at_peak_mb": 23600.0,
+    "obs_n": 44,
+    "obs_peak_rss_mb": 17930.61328125,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "clean_aggregate": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 900,
+    "obs_cap_at_peak_mb": 2000.0,
+    "obs_n": 3,
+    "obs_peak_rss_mb": 552.484375,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "combine_bootstrap": {
+    "WARNING": "4x library-size bump applied 2026-05-04. Pre-bump rec=1300MB. Reason: combine_bootstrap concatenates all bootstrap_gene outputs for one (cell_class, channel_combo); peak scales with library size (N_constructs \u00d7 N_genes). v3b ran on essential-wide; real libraries ~4x larger.",
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 5200,
+    "obs_cap_at_peak_mb": 3000.0,
+    "obs_n": 1,
+    "obs_peak_rss_mb": 844.40625,
+    "obs_source": "manual_override_library_4x_2026-05-04",
+    "overhead": "explicit_4x_library_bump",
+    "scaling_factors": [
+      "library"
+    ],
+    "tier": "well"
+  },
+  "combine_cells": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 2600,
+    "obs_cap_at_peak_mb": 20000.0,
+    "obs_n": 7,
+    "obs_peak_rss_mb": 1677.8046875,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "combine_metadata_phenotype": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 600,
+    "obs_cap_at_peak_mb": 600.0,
+    "obs_n": 9,
+    "obs_peak_rss_mb": 351.28515625,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "combine_metadata_sbs": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 600,
+    "obs_cap_at_peak_mb": 1500.0,
+    "obs_n": 9,
+    "obs_peak_rss_mb": 366.44921875,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "combine_phenotype_info": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 1600,
+    "obs_cap_at_peak_mb": 20000.0,
+    "obs_n": 6,
+    "obs_peak_rss_mb": 1001.43359375,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "combine_reads": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 5200,
+    "obs_cap_at_peak_mb": 20000.0,
+    "obs_n": 2,
+    "obs_peak_rss_mb": 3422.22265625,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "combine_sbs_info": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 1600,
+    "obs_cap_at_peak_mb": 20000.0,
+    "obs_n": 7,
+    "obs_peak_rss_mb": 1011.40234375,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "convert_phenotype": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 1500,
+    "obs_cap_at_peak_mb": 1300.0,
+    "obs_n": 5124,
+    "obs_peak_rss_mb": 982.7890625,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "tile"
+  },
+  "convert_sbs": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 700,
+    "obs_cap_at_peak_mb": 700.0,
+    "obs_n": 11988,
+    "obs_peak_rss_mb": 454.9140625,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "tile"
+  },
+  "deduplicate_merge": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 5400,
+    "obs_cap_at_peak_mb": 20000.0,
+    "obs_n": 1,
+    "obs_peak_rss_mb": 3575.703125,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "eval_aggregate": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 41300,
+    "obs_cap_at_peak_mb": 980000.0,
+    "obs_n": 3,
+    "obs_peak_rss_mb": 27486.203125,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "eval_features": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 1400,
+    "obs_cap_at_peak_mb": 4000.0,
+    "obs_n": 1,
+    "obs_peak_rss_mb": 921.6796875,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "eval_mapping": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 13700,
+    "obs_cap_at_peak_mb": 200000.0,
+    "obs_n": 2,
+    "obs_peak_rss_mb": 9117.265625,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "eval_merge": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 6200,
+    "obs_cap_at_peak_mb": 20000.0,
+    "obs_n": 1,
+    "obs_peak_rss_mb": 4104.4921875,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "eval_segmentation_phenotype": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 2400,
+    "obs_cap_at_peak_mb": 50000.0,
+    "obs_n": 1,
+    "obs_peak_rss_mb": 1534.26953125,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "eval_segmentation_sbs": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 2900,
+    "obs_cap_at_peak_mb": 50000.0,
+    "obs_n": 2,
+    "obs_peak_rss_mb": 1886.05859375,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "extract_metadata_phenotype": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 500,
+    "obs_cap_at_peak_mb": 1480.0,
+    "obs_n": 16,
+    "obs_peak_rss_mb": 320.2578125,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "tile"
+  },
+  "extract_metadata_sbs": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 500,
+    "obs_cap_at_peak_mb": 1452.0,
+    "obs_n": 132,
+    "obs_peak_rss_mb": 316.6875,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "tile"
+  },
+  "fast_alignment": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 23900,
+    "obs_cap_at_peak_mb": 20000.0,
+    "obs_n": 3,
+    "obs_peak_rss_mb": 15933.01171875,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "fast_merge": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 2400,
+    "obs_cap_at_peak_mb": 3000.0,
+    "obs_n": 1,
+    "obs_peak_rss_mb": 1569.09765625,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "filter": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 109100,
+    "obs_cap_at_peak_mb": 100000.0,
+    "obs_n": 3,
+    "obs_peak_rss_mb": 72672.9453125,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "final_merge": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 178500,
+    "obs_cap_at_peak_mb": 500000.0,
+    "obs_n": 1,
+    "obs_peak_rss_mb": 118948.4765625,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "format_merge": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 4500,
+    "obs_cap_at_peak_mb": 20000.0,
+    "obs_n": 1,
+    "obs_peak_rss_mb": 2954.46484375,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "generate_feature_table": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 51800,
+    "obs_cap_at_peak_mb": 980000.0,
+    "obs_n": 4,
+    "obs_peak_rss_mb": 34512.796875,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "generate_montage": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 2600,
+    "obs_cap_at_peak_mb": 10000.0,
+    "obs_n": 3972,
+    "obs_peak_rss_mb": 1702.6796875,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "merge_phenotype": {
+    "WARNING": "manual_override_after_OOM_2026-05-01_actual_peak_may_be_higher",
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 128000,
+    "obs_cap_at_peak_mb": 128000.0,
+    "obs_n": 1,
+    "obs_peak_rss_mb": 82879.0,
+    "obs_source": "manual_override_after_OOM_2026-05-01",
+    "overhead": "explicit_post_OOM_bump",
+    "tier": "well"
+  },
+  "phate_leiden_clustering": {
+    "WARNING": "4x library-size bump applied 2026-05-04. Pre-bump rec=10000MB. Reason: v3b ran on essential-wide library; real libraries are ~4x larger so per-job feature table size scales proportionally.",
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 40000,
+    "obs_cap_at_peak_mb": 0,
+    "obs_n": 0,
+    "obs_peak_rss_mb": 0,
+    "obs_source": "manual_override_library_4x_2026-05-04",
+    "overhead": "explicit_4x_library_bump",
+    "tier": "well"
+  },
+  "phenotype_tile_group": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 3400,
+    "obs_cap_at_peak_mb": 6000.0,
+    "obs_n": 7498,
+    "obs_peak_rss_mb": 2246.86328125,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "tile"
+  },
+  "prepare_bootstrap_data": {
+    "WARNING": "4x library-size bump applied 2026-05-04. Pre-bump rec=12000MB. Reason: prepare_bootstrap_data reads the dataset-aggregated singlecell parquet + gene/construct tsvs from generate_feature_table; peak scales with both library size AND total cells (i.e. N_wells \u00d7 N_plates). 4x covers the library factor only \u2014 at full-dataset scale also multiply by N_wells.",
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_observed_peak": 3000,
+    "mem_mb_recommended": 48000,
+    "note": "OOM at 3GB default cap on slurm job 7603739; rule has no resources block. 4x bump.",
+    "obs_source": "manual_override_library_4x_2026-05-04",
+    "overhead": "explicit_4x_library_bump",
+    "scaling_factors": [
+      "library",
+      "dataset_wells"
+    ],
+    "tier": "well"
+  },
+  "prepare_montage_data": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 1500,
+    "obs_cap_at_peak_mb": 100000.0,
+    "obs_n": 1,
+    "obs_peak_rss_mb": 964.08203125,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  },
+  "sbs_tile_group": {
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 6100,
+    "obs_cap_at_peak_mb": 8000.0,
+    "obs_n": 7326,
+    "obs_peak_rss_mb": 4053.15625,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "tile"
+  },
+  "split_datasets": {
+    "WARNING": "peak_was_at_cap_actual_peak_may_be_higher",
+    "_baseline_origin": "speed-branch v3b 2026-05-03 (single well, 1 plate). Use as starting point; aggregate_efficiency will overwrite per-rule entries with screen-local observations after the first run.",
+    "mem_mb_recommended": 160200,
+    "obs_cap_at_peak_mb": 107400.0,
+    "obs_n": 3,
+    "obs_peak_rss_mb": 106797.02734375,
+    "obs_source": "efficiency_aggregated",
+    "overhead": 1.5,
+    "tier": "well"
+  }
+}

@@ -1,0 +1,215 @@
+autonomy_mode: interactive        # interactive | unattended
+
+# --- values patched into notebook vars: keys are the EXACT notebook variable ---
+sweep_bands:
+  # Adaptive coarse-to-fine: sweep the coarse band, then refine ±refine_radius
+  # around the winner at refine_step. refine_radius = coarse_step/2 guarantees
+  # the refine pass tiles the gap to the adjacent coarse point. A plain list
+  # (instead of a dict) means a fixed, non-adaptive sweep.
+  sbs:
+    THRESHOLD_READS:               # -> config sbs.threshold_peaks
+      coarse: [50, 100, 200, 400, 800, 1600, 3200]   # log-spaced: screen-independent (peak scores span ~2 decades across screens)
+      refine_radius: 100
+      refine_step: 50
+      min: 25
+      max: 6400
+    PEAK_WIDTH:                    # all 5 reference screens used 5, but likely artificially low
+      coarse: [3, 5, 7, 9, 11, 13, 15]
+      refine_radius: 2
+      refine_step: 1
+      min: 3
+      max: 20
+  phenotype: {}                   # NUCLEI_DIAMETER is cellpose-auto-estimated per screen; nothing to sweep
+
+sweep_joint:                      # params swept TOGETHER (outer -> inner, DAG order) on one live kernel
+  sbs: [PEAK_WIDTH, THRESHOLD_READS]   # per tile: product of coarse bands + local refine, no re-segmentation
+
+notebook_defaults:                # lab-standard values patched into the exact notebook var
+  # The lab-default-sourced rows of data/interview_template.json.
+  # Operator + screen.yaml values override these.
+  preprocess: {CONFIG_FILE_PATH: config/config.yml, ROOT_FP: brieflow_output/, IMAGE_FORMAT: zarr, ZARR_MAX_LEVELS: 1, SBS_SAMPLES_DF_FP: config/sbs_samples.tsv, PHENOTYPE_SAMPLES_DF_FP: config/phenotype_samples.tsv, SBS_COMBO_DF_FP: config/sbs_combo.tsv,
+    PHENOTYPE_COMBO_DF_FP: config/phenotype_combo.tsv, SBS_METADATA_SAMPLES_DF_FP: config/sbs_metadata_samples.tsv, PHENOTYPE_METADATA_SAMPLES_DF_FP: config/phenotype_metadata_samples.tsv, SAMPLE_FRACTION: 0.1}
+  sbs:
+    CONFIG_FILE_PATH: config/config.yml
+    SEGMENTATION_METHOD: cellpose
+    ALIGNMENT_METHOD: null
+    UPSAMPLE_FACTOR: 2
+    WINDOW: 2
+    SKIP_CYCLES: null
+    MANUAL_BACKGROUND_CYCLE: null
+    MANUAL_CHANNEL_MAPPING: null
+    MAX_FILTER_WIDTH: 3
+    SPOT_DETECTION_METHOD: standard
+    SPOTIFLOW_CYCLE_INDEX: 0
+    SPOTIFLOW_MODEL: general
+    SPOTIFLOW_THRESHOLD: 0.3
+    SPOTIFLOW_MIN_DISTANCE: 1
+    GPU: false
+    RECONCILE: contained_in_cells
+    CELLPOSE_MODEL: cyto3
+    NUCLEI_FLOW_THRESHOLD: 0.4
+    NUCLEI_CELLPROB_THRESHOLD: 0
+    CELL_FLOW_THRESHOLD: 1
+    CELL_CELLPROB_THRESHOLD: 0
+    HELPER_INDEX: null
+    STARDIST_MODEL: 2D_versatile_fluo
+    NUCLEI_PROB_THRESHOLD: 0.479071
+    NUCLEI_NMS_THRESHOLD: 0.3
+    CELL_PROB_THRESHOLD: 0.479071
+    CELL_NMS_THRESHOLD: 0.3
+    DF_BARCODE_LIBRARY_FP: config/barcode_library.tsv
+    UNIPROT_DATA_FP: config/uniprot_data.tsv
+    NONTARGETING_FORMAT: nontargeting_{prefix}
+    NONTARGETING_PATTERNS: [nontargeting, sg_nt, non-targeting]
+    SKIP_CYCLES_MAP: null
+    PREFIX_MAP: prefix_map
+    PREFIX_RECOMB: prefix_recomb
+    SKIP_CYCLES_RECOMB: null
+    CALL_READS_METHOD: median
+    Q_MIN: 0
+    ERROR_CORRECT: false
+    SORT_CALLS: count
+    MAX_DISTANCE: null
+    BARCODE_INFO_COLS: null
+    RECOMB_FILTER_COL: Q_recomb
+    RECOMB_Q_THRESH: 0.1
+  phenotype: {CONFIG_FILE_PATH: config/config.yml, SEGMENTATION_METHOD: cellpose, CHANNEL_CMAPS: null, UPSAMPLE_FACTOR: 2, WINDOW: 2, CUSTOM_CHANNEL_OFFSETS: null, GPU: false, PIPELINE_GPU: null, RECONCILE: contained_in_cells, CELLPOSE_MODEL: cyto3, NUCLEI_FLOW_THRESHOLD: 0.4,
+    NUCLEI_CELLPROB_THRESHOLD: 0, CELL_FLOW_THRESHOLD: 1, CELL_CELLPROB_THRESHOLD: 0, HELPER_INDEX: null, STARDIST_MODEL: 2D_versatile_fluo, NUCLEI_PROB_THRESHOLD: 0.479071, NUCLEI_NMS_THRESHOLD: 0.3, CELL_PROB_THRESHOLD: 0.479071,
+    CELL_NMS_THRESHOLD: 0.3, CP_METHOD: cp_emulator, CUSTOM_FEATURES: [], SECOND_OBJ_MIN_SIZE: 10, SECOND_OBJ_MAX_SIZE: 200, SIZE_FILTER_METHOD: feret, MAX_OBJECTS_PER_CELL: 120, OVERLAP_THRESHOLD: 0.1, MAX_TOTAL_OBJECTS: 1000, SECOND_OBJ_CELLPOSE_MODEL: cyto3, SECOND_OBJ_DIAMETER_INPUT: null, SECOND_OBJ_FLOW_THRESHOLD: 0.4, SECOND_OBJ_CELLPROB_THRESHOLD: 0.0, SECOND_OBJ_STARDIST_MODEL: 2D_versatile_fluo, SECOND_OBJ_PROB_THRESHOLD: 0.5, SECOND_OBJ_NMS_THRESHOLD: 0.4, THRESHOLD_SMOOTHING_SCALE: 1.3488, THRESHOLD_METHOD: otsu_two_peak, USE_MORPHOLOGICAL_OPENING: true, OPENING_DISK_RADIUS: 1, FILL_HOLES: both, DECLUMP_METHOD: shape, DECLUMP_MODE: watershed, SUPPRESS_LOCAL_MAXIMA: 20, MAXIMA_REDUCTION_FACTOR: null, USE_SHAPE_REFINEMENT: false, PROPORTION_THRESHOLD: 0.4}
+  merge:
+    CONFIG_FILE_PATH: config/config.yml
+    MERGE_COMBO_DF_FP: config/merge_combo.tsv
+    SBS_METADATA_CYCLE: 1
+    SBS_METADATA_CHANNEL: null
+    PH_METADATA_CHANNEL: null
+    METADATA_ALIGN: false
+    ALIGNMENT_FLIP_X: false
+    ALIGNMENT_FLIP_Y: false
+    ALIGNMENT_ROTATE_90: false
+    INITIAL_SITES_APPROACH: auto
+    THRESHOLD: 2
+    FLIPUD: false
+    FLIPLR: false
+    ROT90: 0
+    SBS_DEDUP_PRIOR: {distance: true, mapped_single_gene: false}
+    PHENO_DEDUP_PRIOR: {distance: true, fov_distance_0: true}
+    LOCAL_REFINEMENT: null
+    WARP_DEGREE: null
+    WARP_ITERATIONS: null
+    WARP_SMOOTHING: null
+    SEED_OPTIMIZE: null
+    SEED_TOPK: null
+    THRESHOLD_TRIANGLE: null
+  classify:
+    RUN_CLASSIFY: false
+    CONFIG_FILE_PATH: config/config.yml
+    RELABEL_CLASSIFICATIONS: true
+    TRAINING_DATA_SOURCE: merge
+    MODE: cell
+    GATE_FEATURE: null
+    GATE_MIN: null
+    GATE_MAX: null
+    GATE_MIN_PERCENTILE: null
+    GATE_MAX_PERCENTILE: null
+    TRAINING_DATASET_SELECTION: random
+    TOP_N: 0
+    RANDOM_SEED: 42
+    TRAINING_DATASET_FP: null
+    METADATA_COLS_FP: config/cell_data_metadata_cols.tsv
+    TRAINING_CHANNELS: null
+    TRAINING_OBJECT_TYPES: null
+    TRAINING_NAME: null
+    METADATA_COLS: ["label", "plate", "well", "tile", "cell_0", "i_0", "j_0", "site", "cell_1", "i_1", "j_1", "distance", "fov_distance_0", "fov_distance_1", "cell_barcode_0", "gene_symbol_0", "gene_id_0", "cell_barcode_1", "gene_symbol_1", "gene_id_1", "no_recomb_0", "no_recomb_1", "Q_min_0", "Q_min_1", "Q_recomb_0", "Q_recomb_1", "cell_barcode_peak_0", "cell_barcode_peak_1", "cell_barcode_count_0", "cell_barcode_count_1", "mapped_single_gene", "channels_min", "nucleus_i", "nucleus_j", "nucleus_bounds_0", "nucleus_bounds_1", "nucleus_bounds_2", "nucleus_bounds_3", "cell_i", "cell_j", "cell_bounds_0", "cell_bounds_1", "cell_bounds_2", "cell_bounds_3", "cytoplasm_i", "cytoplasm_j", "cytoplasm_bounds_0", "cytoplasm_bounds_1", "cytoplasm_bounds_2", "cytoplasm_bounds_3"]
+    REMOVE_MASK_LABELS: null
+    MODEL_CONFIGS: [["lr_standard", "lr", "standard", null], ["rf_standard", "rf", "standard", null], ["xgb_none", "xgb", "none", null], ["lgb_standard", "lgb", "standard", null]]
+    CLASSIFIER_MODEL: null
+    COLLAPSE_COLS: ["plate", "well"]
+    CONFIDENCE_CORRECTION: null
+    CALIBRATION_DATASET_FP: null
+    CALIBRATION_METHOD: isotonic
+  aggregate:
+    CONFIG_FILE_PATH: config/config.yml
+    TEST_MONTAGE_CHANNEL: DAPI
+    COLLAPSE_COLS: [cell_barcode_0, gene_symbol_0]
+    MONTAGE_CELL_SIZE: 40
+    AGGREGATE_COMBO_FP: config/aggregate_combo.tsv
+    TEST_CELL_CLASS: all
+    PERTURBATION_NAME_COL: gene_symbol_0
+    DROP_COLS_THRESHOLD: 0.1
+    DROP_ROWS_THRESHOLD: 0.01
+    IMPUTE: true
+    CONTAMINATION: 0.01
+    SKIP_PERTURBATION_SCORE: false
+    PS_PROBABILITY_THRESHOLD: null
+    PS_PERCENTILE_THRESHOLD: null
+    BATCH_COLS: [plate, well]
+    PERTURBATION_ID_COL: cell_barcode_0
+    VARIANCE_OR_NCOMP: 0.99
+    NUM_ALIGN_BATCHES: 1
+    AGG_METHOD: median
+    FEATURE_NORMALIZATION: mad
+    NUM_SIMS: 100000
+    EXCLUSION_STRING: null
+    PSEUDOGENE_PATTERNS: null
+    BOOTSTRAP_EXTRA_FEATURES: null
+    WELL_ANNOTATIONS_FP: null
+    SPLIT_COL: class
+    GROUP_COLS: []
+    BOOTSTRAP_CONTROL_SCOPE: pooled
+    SECOND_OBJ_AGG_STRATEGY: none
+    SPLIT_BY_COMPARTMENT: false
+    GENERATE_MONTAGES: true
+    CONTROL_NAME_COL: null
+    TVN_BATCH_CORRECTION: true
+  cluster:
+    CONFIG_FILE_PATH: config/config.yml
+    MIN_CELL_CUTOFFS: {all: 0}
+    TEST_CELL_CLASS: all
+    PHATE_DISTANCE_METRIC: cosine
+    PERTURBATION_AUC_THRESHOLD: null
+    CLUSTER_COMBO_FP: config/cluster_combo.tsv
+    TEST_LEIDEN_RESOLUTIONS: [0.1, 1, 5, 7, 9, 11, 13, 15, 20, 100]
+    TEST_LEIDEN_RESOLUTION: 5
+    CONTROL_SCOPE: pooled
+    CLUSTER_CONTROL_KEY: null
+  analyze:
+    RUN_ANALYZE: false
+    CONFIG_FILE_PATH: config/config.yml
+    RESOLUTION_METRIC: corum_enrichment
+    RESOLUTION_USE_FILTERED: false
+    MOZZARELLM_MODEL: claude-sonnet-5
+    MOZZARELLM_MODE: cot
+    MOZZARELLM_MCP: true
+    MOZZARELLM_SOURCE: affinage_then_uniprot
+    MOZZARELLM_INCLUDE_FEATURES: auto
+    MOZZARELLM_INCLUDE_STRENGTH: auto
+    MOZZARELLM_N_FEATURES: 20
+    MOZZARELLM_FDR_THRESHOLD: null
+    MOZZARELLM_MAX_TOKENS: 64000
+    MOZZARELLM_ANNOTATE_SELECTED: true
+    MOZZARELLM_REWRITE_CONTEXTS: false
+    MOZZARELLM_RUN_NAME: run1
+    MOZZARELLM_MAX_WORKERS: 8
+    MOZZARELLM_MAX_FAILED_CLUSTERS: 2
+    MOZZARELLM_RUNTIME: 720
+
+# --- plugin-side config (NOT patched into any notebook) ---
+sweep_tiles:
+  n_tiles: 5
+  max_tiles: 10                     # cap the reactive sweep to a well-spread sample (plate-size-independent)
+  max_parallel_kernels: 3           # sweep tiles concurrently on this many live marimo kernels (1 = sequential)
+  kernel_timeout_s: 900             # per-value limit and baseline floor; the baseline limit scales with tile image size
+  run_in_allocation: true           # backend=slurm: sweeps run on a compute node through srun, never on the runner's host
+  alloc_cpus_per_kernel: 4
+  alloc_mem_gb_per_kernel: 24
+  alloc_time: "8:00:00"
+merge_approach:                   # derives MERGE_APPROACH (brieflow_interview.derive_merge_approach)
+  max_cells_per_tile: 60          # measured median phenotype cells/tile below this -> "positions"; fast failed at 18-29 and worked at ~130
+  min_objective_x: 40             # before phenotype cell counts exist: phenotype objective >= this -> "positions"
+merge_alignment:
+  n_initial_sbs_tiles: 20           # anchors offered to fast_alignment; ~half fail the det/score filter on hard screens and merge needs >=5 survivors (clamped to tiles available)
+recovery: {max_attempts: 3}
+cluster_selection:                # QC selection criteria; pairs with qc_gates cluster genes_per_cluster gate
+  target_genes_per_cluster: 20
+  genes_per_cluster_tolerance: 5
+# qc_gates live in qc_gates.yaml (the QC foundation); referenced, not duplicated

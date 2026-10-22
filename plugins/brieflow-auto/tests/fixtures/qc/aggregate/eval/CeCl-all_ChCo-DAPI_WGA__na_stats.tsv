@@ -1,0 +1,4 @@
+column	percent_na
+gene_symbol_0	0.10
+mapped_single_gene	0.05
+cell_DAPI_mean	0.25

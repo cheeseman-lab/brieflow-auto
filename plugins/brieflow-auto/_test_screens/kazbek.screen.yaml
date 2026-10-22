@@ -1,0 +1,187 @@
+# screen.yaml — description of the experimental setup.
+
+# =========================================================================
+# collection
+# =========================================================================
+collection:
+  title: null
+  publication_doi: null
+
+# =========================================================================
+# experiment (ontology-tagged for BIA archival)
+# =========================================================================
+experiment:
+  screen_title: kazbek                        # short slug; matches conda env brieflow_<id>
+  organism_ontology_term_id: "NCBITaxon:9606"     # default = human
+  organism: "Homo sapiens"
+  tissue_ontology_term_id: "CVCL_0030"            # e.g. CVCL_0030 for HeLa
+  tissue: "HeLa"                                   # e.g. "HeLa"
+  tissue_type: "cell line"
+  disease_ontology_term_id: "PATO:0000461"
+  disease: "normal"
+  development_stage_ontology_term_id: "na"
+  development_stage: "na"
+  assay_ontology_term_id: "EFO:0022605"
+  assay: "optical pooled screening"
+  pseudobulk: []
+
+
+# =========================================================================
+# cellular
+# =========================================================================
+cellular:
+  growth_conditions: null
+  plate_type: null
+  imaging_timepoint: "78 hours after DOX induction"  # e.g. "78 hours post-transfection"
+  seeding:
+    density_cells_cm2: null
+  induction:
+    duration: "78 hours DOX"
+
+# =========================================================================
+# library
+# =========================================================================
+library:
+  vector: null
+  gene_selection: "essential genes"
+  positive_controls: []
+  negative_controls: ["nontargeting"]
+  type: simple                                    # simple | multi  (sgRNA-level vs MAP+RECOMB barcoding)
+  detection_target: DNA                           # DNA | RNA — DNA barcodes give NUCLEAR spots; RNA (T7-amplified or mRNA) gives NON-NUCLEAR (cytoplasmic) spots. Drives SBS pipeline spot mask + RECONCILE.
+  number_of_genes: 5000
+  raw_design_table_fp: config/barcode_library.tsv  # INPUT path: raw guide RNA design TSV (e.g. "config/barcode_library_design.tsv")
+  # --- simple mode (type: simple): one barcode column ---
+  barcode_col: sgRNA                              # sgRNA-sequence column name in raw_design_table_fp (canonical: "sgRNA")
+  # --- multi mode (type: multi): two barcode columns + per-region lengths + sequencing order ---
+  barcode_map_col: null                           # column name for MAP-region barcode sequences (e.g. "iBAR_2")
+  barcode_recomb_col: null                        # column name for RECOMB-region barcode sequences (e.g. "iBAR_1")
+  barcode_length_map: null                        # length of MAP region in cycles (e.g. 12)
+  barcode_length_recomb: null                     # length of RECOMB region in cycles (e.g. 2)
+  sequencing_order: null                          # "map_recomb" (MAP first) | "recomb_map" (RECOMB first) — which region is sequenced first across cycles
+  gene_symbol_col: gene_symbol                    # canonical: "gene_symbol"
+  gene_id_col: gene_id                            # canonical: "gene_id"
+
+# =========================================================================
+# iss (in-situ sequencing / SBS)
+# =========================================================================
+iss:
+  cycles: 12
+  objective: null                                 # e.g. "10X 0.45 NA"
+  chemistry: "four color"
+  channels:                                       # one entry per imaging channel
+    - { name: "DAPI",     laser_wavelength_nm: 408, exposure_time_ms: null }
+    - { name: "Vimentin", laser_wavelength_nm: null, exposure_time_ms: null }
+    - { name: "G",        laser_wavelength_nm: null, exposure_time_ms: null }
+    - { name: "T",        laser_wavelength_nm: null, exposure_time_ms: null }
+    - { name: "A",        laser_wavelength_nm: null, exposure_time_ms: null }
+    - { name: "C",        laser_wavelength_nm: null, exposure_time_ms: null }
+  binning: null                                   # 1 (none) | 2 (2x2)  — used with objective for DET_RANGE
+  cycle_order: "GTAC"                             # base order across the 4 sequencing channels
+  background_channel_nucleus:                     # which base channel/cycle to use as nuclear background
+    channel: "DAPI"
+    cycle: 12
+  background_channel_cell:                        # which base channel/cycle to use as cytoplasmic background
+    channel: "Vimentin"
+    cycle: 12
+
+# =========================================================================
+# phenotype
+# =========================================================================
+phenotype:
+  objective: null                                 # e.g. "20X 0.75 NA"
+  channels:                                       # one entry per phenotype channel
+    # biological_name is what features get named (DAPI_mean, CENPA_mean, …).
+    # fluorophore_token is what appears in the raw filename (DAPI, GFP, A594, A750).
+    # The wizard uses this mapping to skip the F-014 channel-mapping interview prompt.
+    - biological_name: "DAPI"                     # e.g. "DAPI"  -> channels_metadata.name
+      marker_of: "DNA"                            # e.g. "Nuclei" -> biological_annotation.biological_target
+      marker: null                                # gene/protein stained, e.g. "HSPA1B" -> biological_annotation.marker
+      marker_type: "dye"                          # "dye" | "antibody" | "endogenous_tag" -> biological_annotation.marker_type
+      fluorophore_token: "DAPI"                   # filename token (e.g. "GFP" stains "COXIV")
+      laser_wavelength_nm: null
+      exposure_time_ms: null
+    - biological_name: "ACA"
+      marker_of: "Centromeres"
+      marker: null
+      marker_type: "antibody"
+      fluorophore_token: "GFP"
+      laser_wavelength_nm: null
+      exposure_time_ms: null
+    - biological_name: "MITOTRACKER"
+      marker_of: "Active mitochondria"
+      marker: null
+      marker_type: "dye"
+      fluorophore_token: "CY3"
+      laser_wavelength_nm: null
+      exposure_time_ms: null
+    - biological_name: "VIMENTIN"
+      marker_of: "Vimentin"
+      marker: "VIM"
+      marker_type: "antibody"
+      fluorophore_token: "CY5"
+      laser_wavelength_nm: null
+      exposure_time_ms: null
+    - biological_name: "CENPT"
+      marker_of: "CenpT"
+      marker: "CENPT"
+      marker_type: "antibody"
+      fluorophore_token: "AF750"
+      laser_wavelength_nm: null
+      exposure_time_ms: null
+    - biological_name: "ITGB1"
+      marker_of: "Integrin"
+      marker: "ITGB1"
+      marker_type: "antibody"
+      fluorophore_token: "CY3"
+      laser_wavelength_nm: null
+      exposure_time_ms: null
+    - biological_name: "PHALLOIDIN"
+      marker_of: "F-actin"
+      marker: null
+      marker_type: "dye"
+      fluorophore_token: null
+      laser_wavelength_nm: null
+      exposure_time_ms: null
+    - biological_name: "WGA"
+      marker_of: "Membranes"
+      marker: null
+      marker_type: "dye"
+      fluorophore_token: "AF750"
+      laser_wavelength_nm: null
+      exposure_time_ms: null
+    # ... add one entry per channel ...
+  binning: null                                   # 1 (none) | 2 (2x2)
+  segment_cells: true                             # true = segment cells around each nucleus (cellpose cyto); false = nuclei-only feature extraction (skip cellpose cell mask)
+  background_channel_nucleus: "DAPI"              # biological_name of the nuclear-boundary marker (e.g. "DAPI");
+  background_channel_cell: "VIMENTIN"            # biological_name of the cell-boundary marker (e.g. "WGA"); required only when segment_cells: true
+  foci_channel: "CENPT"                          # biological_name of the foci/puncta marker (e.g. "gH2AX", "CENPA"); null = no foci pipeline. Drives FOCI_CHANNEL + routes the foci pipeline on/off.
+
+# =========================================================================
+# microscope
+# =========================================================================
+microscope:
+  system: null
+
+# =========================================================================
+# pipeline (where brieflow lives + which env runs it)
+# =========================================================================
+pipeline:
+  github: "cheeseman-lab/brieflow"
+  version: null                                   # branch or tag (e.g. "zarr3-merge-main-speed")
+  conda_env: null                                 # e.g. "brieflow_<screen>"
+
+# =========================================================================
+# data (where the raw images are)
+# =========================================================================
+data:
+  storage_format: nd2                             # nd2 | tiff | zarr
+  location: "/path/to/raw/kazbek"  # base path (e.g. /path/to/raw/<screen>)
+  input_sbs_dir: null                             # raw SBS images dir
+  input_phenotype_dir: null                       # raw phenotype images dir
+
+additional_notes: |
+  Dropped the first sequencing cycle — it wasn't good. This was our biggest
+  phenotype panel: centromeres stained two ways (ACA and CenpT), active
+  mitochondria (MitoTracker), vimentin, integrin beta-1, and membranes. We tried
+  phalloidin for actin too, but the signal faded over the run so we're ignoring
+  it. CenpT marks the centromeres as sharp spots, and that's a key readout.

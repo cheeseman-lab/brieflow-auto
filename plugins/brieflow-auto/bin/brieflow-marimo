@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+# brieflow-marimo — kill running marimo instances + relaunch on a notebook.
+#
+# Solves the recurring "is marimo still running on port X? kill it, find a free
+# port, restart, look up the URL/token" loop. Defaults to localhost-only with
+# the env's pinned marimo (uses `python -m marimo` to bypass the PATH-shadowed
+# old marimo at ~/.local/bin/marimo).
+#
+# Usage:
+#   brieflow-marimo                       # kill, relaunch on 0_preprocess.py
+#   brieflow-marimo <notebook.py>         # kill, relaunch on this notebook
+#   brieflow-marimo --kill                # kill only, don't relaunch
+#   brieflow-marimo --port 8770 <file>    # use a specific port (default: pick next free from 8765)
+#   brieflow-marimo --status              # show running marimo PIDs + ports
+
+set -euo pipefail
+
+NOTEBOOK=""
+PORT=""
+KILL_ONLY=0
+STATUS_ONLY=0
+
+usage() {
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
+    exit "${1:-0}"
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --kill|--kill-only) KILL_ONLY=1; shift ;;
+        --status) STATUS_ONLY=1; shift ;;
+        --port) PORT="$2"; shift 2 ;;
+        --help|-h) usage 0 ;;
+        --*) echo "unknown flag: $1" >&2; usage 2 ;;
+        *) NOTEBOOK="$1"; shift ;;
+    esac
+done
+
+# ---- status mode: just list running marimo instances ----
+if [[ $STATUS_ONLY -eq 1 ]]; then
+    echo "marimo processes (user: $USER):"
+    if ! pgrep -u "$USER" -af "marimo edit" 2>/dev/null; then
+        echo "  (none running)"
+    fi
+    echo
+    echo "marimo listening ports:"
+    ss -tlnp 2>/dev/null | grep -E "marimo|python" || echo "  (none)"
+    exit 0
+fi
+
+# ---- kill phase: terminate any current-user marimo processes ----
+echo "==> killing marimo processes owned by $USER..."
+mapfile -t pids < <(pgrep -u "$USER" -f "marimo edit" 2>/dev/null || true)
+if [[ ${#pids[@]} -eq 0 ]]; then
+    echo "    (none running)"
+else
+    for pid in "${pids[@]}"; do
+        cmd=$(ps -p "$pid" -o command= 2>/dev/null | head -c 80 || true)
+        echo "    SIGTERM $pid: $cmd"
+        kill "$pid" 2>/dev/null || true
+    done
+    sleep 1
+    # force-kill stragglers
+    for pid in "${pids[@]}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+            echo "    SIGKILL $pid (didn't exit on SIGTERM)"
+            kill -9 "$pid" 2>/dev/null || true
+        fi
+    done
+fi
+
+[[ $KILL_ONLY -eq 1 ]] && exit 0
+
+# ---- launch phase ----
+NOTEBOOK="${NOTEBOOK:-0_preprocess.py}"
+if [[ ! -f "$NOTEBOOK" ]]; then
+    echo "ERROR: notebook not found: $NOTEBOOK" >&2
+    echo "  (cwd: $(pwd))" >&2
+    exit 2
+fi
+
+# Pick a free port. Default: 8765, increment until free.
+PORT="${PORT:-8765}"
+while ss -tln 2>/dev/null | awk '{print $4}' | grep -qE ":$PORT$"; do
+    PORT=$((PORT + 1))
+done
+
+LOG="${NOTEBOOK%.py}.marimo.log"
+: > "$LOG"
+
+echo "==> launching marimo edit $NOTEBOOK on port $PORT..."
+echo "    log: $LOG"
+
+# Use `python -m marimo` to force the env's marimo (not the PATH-shadowed one).
+# --headless so it doesn't try to open a browser on the server side.
+nohup python -m marimo edit "$NOTEBOOK" \
+    --host 127.0.0.1 --port "$PORT" --headless \
+    >> "$LOG" 2>&1 &
+PID=$!
+disown
+
+# Wait for URL to materialize in the log
+URL=""
+for _i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+    URL=$(grep -oE "http://127\.0\.0\.1:[0-9]+(/\?[^[:space:]]+)?" "$LOG" 2>/dev/null | head -1 || true)
+    [[ -n "$URL" ]] && break
+    if ! kill -0 "$PID" 2>/dev/null; then
+        echo "ERROR: marimo exited before printing URL. Log tail:" >&2
+        tail -20 "$LOG" >&2
+        exit 1
+    fi
+    sleep 1
+done
+
+if [[ -z "$URL" ]]; then
+    echo "WARNING: no URL detected in log after 12s. Log tail:" >&2
+    tail -20 "$LOG" >&2
+    echo "Process is still running at PID $PID; check log for URL/token manually." >&2
+    exit 1
+fi
+
+cat <<EOF
+
+==> ready (PID $PID)
+
+URL (open in browser):
+  $URL
+
+SSH tunnel (from your laptop):
+  ssh -L $PORT:127.0.0.1:$PORT $USER@$(hostname)
+
+Then open the URL above in your laptop browser.
+
+Manage:
+  brieflow-marimo --status         # show running processes + ports
+  brieflow-marimo --kill           # stop the running marimo (no relaunch)
+  brieflow-marimo <other.py>       # kill this one and launch another notebook
+EOF

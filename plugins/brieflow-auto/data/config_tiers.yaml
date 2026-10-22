@@ -1,0 +1,375 @@
+# Per-key classification of brieflow config values, for /brieflow-setup
+# and brieflow_preflight.py.
+#
+# `source` says where each value comes from — i.e. the smallest set of
+# inputs the operator must provide, vs. what a notebook can derive vs.
+# what's a true universal default.
+#
+# Sources:
+#   operator         operator must answer; ASK at init. Smallest possible set:
+#                    paths, library design, hardware identity (plate format).
+#   data-inspection  a configure_*.ipynb cell reads the operator's data
+#                    (e.g. opens a sample nd2) and writes the value. The
+#                    operator just runs the notebook; nothing to answer.
+#   tuning           an interactive configure_*.ipynb cell where the operator
+#                    looks at QC output (segmentation overlays, alignment
+#                    histograms, classifier confusion) and picks a value.
+#   default          true universal — no per-screen reason to change it.
+#
+# Optional fields (per key):
+#   canonical        the default value (for source=default; or starting
+#                    point that gets overwritten by inspection/tuning).
+#   accepted         allowed values (for validation).
+#   notebook         which configure_*.ipynb produces this value
+#                    (required for source ∈ {data-inspection, tuning}).
+#   inspect_from     which operator-input key the notebook reads to derive
+#                    this one (only for source=data-inspection).
+#   fixture_value    canonical-fixture value; if present in screen config,
+#                    block — proves the notebook never ran on real data.
+#   allow_null       true if `null` is a valid answer (e.g. classifier_path).
+#   conditional_on   another key whose presence/value gates this one.
+#   follows          another key this should match (e.g. perturbation_id_col
+#                    follows collapse_cols).
+#
+# Status: first pass written 2026-05-02 by reading each configure_*.ipynb
+# and tracing which params it writes via `safe_config`. Some classifications
+# are guesses; flagged with `# review` in trailing comments. Walk through
+# section by section to confirm.
+
+tiers:
+  preprocess:
+    # Notebook 0 inspects the operator's nd2 path and writes everything below.
+    root_fp:                       {source: operator,        reason: "output directory for this screen"}
+    sbs_samples_fp:                {source: operator,        reason: "operator-curated samples table"}
+    sbs_combo_fp:                  {source: operator,        reason: "operator-curated combo table"}
+    phenotype_samples_fp:          {source: operator,        reason: "operator-curated samples table"}
+    phenotype_combo_fp:            {source: operator,        reason: "operator-curated combo table"}
+
+    sbs_data_format:               {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: sbs_samples_fp, canonical: nd2}
+    sbs_data_organization:         {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: sbs_samples_fp, canonical: well}
+    sbs_channel_order:             {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: sbs_samples_fp}
+    sbs_channel_order_flip:        {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: sbs_samples_fp, canonical: false}
+    sbs_n_z_planes:                {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: sbs_samples_fp, canonical: null, allow_null: true}
+    sbs_metadata_samples_df_fp:    {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: sbs_samples_fp, canonical: null, allow_null: true}
+
+    phenotype_data_format:         {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: phenotype_samples_fp, canonical: nd2}
+    phenotype_data_organization:   {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: phenotype_samples_fp, canonical: well}
+    phenotype_channel_order:       {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: phenotype_samples_fp}
+    phenotype_channel_order_flip:  {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: phenotype_samples_fp, canonical: false}
+    phenotype_round_order:         {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: phenotype_samples_fp}
+    phenotype_n_z_planes:          {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: phenotype_samples_fp, canonical: null, allow_null: true}
+    phenotype_metadata_samples_df_fp: {source: data-inspection, notebook: 0.configure_preprocess_params.ipynb,
+                                    inspect_from: phenotype_samples_fp, canonical: null, allow_null: true}
+
+    sample_fraction:               {source: tuning,          notebook: 0.configure_preprocess_params.ipynb,
+                                    canonical: 1.0,
+                                    reason: "operator may downsample for fast iteration"}
+
+  sbs:
+    # Notebook 2 produces all of these. Operator-asked = library design
+    # facts only. Inferred from data = channel/cycle indexing. Tuned =
+    # segmentation thresholds + peak threshold.
+    df_barcode_library_fp:         {source: operator,        reason: "operator's barcode library file"}
+    barcode_type:                  {source: operator,        reason: "library design: simple|paired|etc"}
+    barcode_col:                   {source: operator,        reason: "library design: barcode column name"}
+    prefix_col:                    {source: operator,        reason: "library design: prefix column name"}
+    heatmap_plate:                 {source: operator,        reason: "plate format (e.g. 6W, 96W)"}
+
+    channel_names:                 {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    inspect_from: sbs_samples_fp}
+    cyto_cycle:                    {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    inspect_from: sbs_samples_fp}
+    cyto_cycle_index:              {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    inspect_from: sbs_samples_fp}
+    cyto_index:                    {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    inspect_from: sbs_samples_fp}
+    dapi_cycle:                    {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    inspect_from: sbs_samples_fp}
+    dapi_cycle_index:              {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    inspect_from: sbs_samples_fp}
+    dapi_index:                    {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    inspect_from: sbs_samples_fp}
+    extra_channel_indices:         {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    inspect_from: sbs_samples_fp}
+    skip_cycles_indices:           {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    inspect_from: sbs_samples_fp, canonical: null, allow_null: true}
+    manual_background_cycle_index: {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    canonical: null, allow_null: true}  # review: rarely set?
+    manual_channel_mapping:        {source: data-inspection, notebook: 2.configure_sbs_params.ipynb,
+                                    canonical: null, allow_null: true}  # review: rarely set?
+
+    nuclei_diameter:               {source: tuning,          notebook: 2.configure_sbs_params.ipynb}
+    nuclei_flow_threshold:         {source: tuning,          notebook: 2.configure_sbs_params.ipynb}
+    nuclei_cellprob_threshold:     {source: tuning,          notebook: 2.configure_sbs_params.ipynb}
+    cell_diameter:                 {source: tuning,          notebook: 2.configure_sbs_params.ipynb}
+    cell_flow_threshold:           {source: tuning,          notebook: 2.configure_sbs_params.ipynb}
+    cell_cellprob_threshold:       {source: tuning,          notebook: 2.configure_sbs_params.ipynb}
+    threshold_peaks:               {source: tuning,          notebook: 2.configure_sbs_params.ipynb}
+
+    cellpose_model:                {source: default,         canonical: cyto3}
+    cyto_model:                    {source: default,         canonical: cyto3}
+    segmentation_method:           {source: default,         canonical: cellpose}
+    segment_cells:                 {source: default,         canonical: true}
+    bases:                         {source: default,         canonical: [G, T, A, C]}
+    alignment_method:              {source: default,         canonical: null, allow_null: true}
+    call_reads_method:             {source: default,         canonical: median}
+    spot_detection_method:         {source: default,         canonical: standard}
+    error_correct:                 {source: default,         canonical: false}
+    gpu:                           {source: default,         canonical: false}
+    heatmap_shape:                 {source: default,         canonical: square}
+    max_filter_width:              {source: default,         canonical: 3}
+    mode:                          {source: default,         canonical: null, allow_null: true}
+    peak_width:                    {source: default,         canonical: 5}
+    q_min:                         {source: default,         canonical: 0}
+    reconcile:                     {source: default,         canonical: contained_in_cells}
+    sort_calls:                    {source: default,         canonical: count}
+    upsample_factor:               {source: default,         canonical: 2}
+    window:                        {source: default,         canonical: 2}
+
+  phenotype:
+    # Notebook 3. Same pattern as sbs: data inspection writes channels +
+    # indices; interactive tuning writes segmentation params.
+    heatmap_plate:                 {source: operator,        reason: "plate format"}
+
+    channel_names:                 {source: data-inspection, notebook: 3.configure_phenotype_params.ipynb,
+                                    inspect_from: phenotype_samples_fp}
+    cyto_index:                    {source: data-inspection, notebook: 3.configure_phenotype_params.ipynb,
+                                    inspect_from: phenotype_samples_fp}
+    dapi_index:                    {source: data-inspection, notebook: 3.configure_phenotype_params.ipynb,
+                                    inspect_from: phenotype_samples_fp}
+    foci_channel_index:            {source: data-inspection, notebook: 3.configure_phenotype_params.ipynb,
+                                    inspect_from: phenotype_samples_fp}
+    source:                        {source: data-inspection, notebook: 3.configure_phenotype_params.ipynb,
+                                    inspect_from: phenotype_samples_fp,
+                                    reason: "alignment ref index"}
+    target:                        {source: data-inspection, notebook: 3.configure_phenotype_params.ipynb,
+                                    inspect_from: phenotype_samples_fp,
+                                    reason: "alignment target index"}
+    riders:                        {source: data-inspection, notebook: 3.configure_phenotype_params.ipynb,
+                                    inspect_from: phenotype_samples_fp}
+
+    nuclei_diameter:               {source: tuning,          notebook: 3.configure_phenotype_params.ipynb}
+    cell_diameter:                 {source: tuning,          notebook: 3.configure_phenotype_params.ipynb}
+    flow_threshold:                {source: tuning,          notebook: 3.configure_phenotype_params.ipynb}
+    cellprob_threshold:            {source: tuning,          notebook: 3.configure_phenotype_params.ipynb}
+
+    cp_method:                     {source: default,         canonical: cp_emulator,
+                                    accepted: [cp_measure, cp_emulator]}
+    cellpose_model:                {source: default,         canonical: cyto3}
+    segmentation_method:           {source: default,         canonical: cellpose}
+    segment_cells:                 {source: default,         canonical: true}
+    align:                         {source: default,         canonical: true}
+    gpu:                           {source: default,         canonical: false}
+    heatmap_shape:                 {source: default,         canonical: square}
+
+    # Secondary objects (brieflow secondary_object): all off unless second_obj_detection.
+    second_obj_detection:          {source: operator,        reason: "whether a secondary object channel exists"}
+    second_obj_channel_index:      {source: data-inspection, notebook: 3.configure_phenotype_params.ipynb,
+                                    inspect_from: phenotype_samples_fp}
+    second_obj_method:             {source: default,         canonical: threshold,
+                                    accepted: [threshold, cellpose, stardist]}
+    use_ml_segmentation:           {source: default,         canonical: false}
+    second_obj_min_size:           {source: tuning,          notebook: 3.configure_phenotype_params.ipynb}
+    second_obj_max_size:           {source: tuning,          notebook: 3.configure_phenotype_params.ipynb}
+    size_filter_method:            {source: default,         canonical: feret, accepted: [feret, area]}
+    max_objects_per_cell:          {source: default,         canonical: 120}
+    overlap_threshold:             {source: default,         canonical: 0.1}
+    max_total_objects:             {source: default,         canonical: 1000}
+    threshold_method:              {source: default,         canonical: otsu_two_peak,
+                                    accepted: [otsu_two_peak, otsu_three_peak_mid_bg, otsu_three_peak_mid_fg, min_cross_entropy]}
+    declump_method:                {source: default,         canonical: shape,
+                                    accepted: [none, shape, intensity, shape_intensity]}
+    custom_features:               {source: operator,        reason: "extra per-cell feature definitions"}
+    mode:                          {source: default,         canonical: null, allow_null: true}
+    reconcile:                     {source: default,         canonical: contained_in_cells}
+    remove_channel:                {source: default,         canonical: null, allow_null: true}
+
+  merge:
+    # Notebook 5. Operator provides combo table; data inspection sets
+    # dimensions/metadata-cycle from sample image files; tuning produces
+    # initial_sites + det_range from interactive site-selection.
+    merge_combo_fp:                {source: operator,        reason: "operator-curated merge combo table"}
+
+    sbs_dimensions:                {source: data-inspection, notebook: 5.configure_merge_params.ipynb,
+                                    inspect_from: sbs_samples_fp, canonical: [1200, 1200]}
+    phenotype_dimensions:          {source: data-inspection, notebook: 5.configure_merge_params.ipynb,
+                                    inspect_from: phenotype_samples_fp, canonical: [2400, 2400]}
+    sbs_metadata_cycle:            {source: data-inspection, notebook: 5.configure_merge_params.ipynb,
+                                    inspect_from: sbs_samples_fp, canonical: 1}
+    sbs_metadata_channel:          {source: data-inspection, notebook: 5.configure_merge_params.ipynb,
+                                    canonical: null, allow_null: true}
+    ph_metadata_channel:           {source: data-inspection, notebook: 5.configure_merge_params.ipynb,
+                                    canonical: null, allow_null: true}
+    alignment_flip_x:              {source: data-inspection, notebook: 5.configure_merge_params.ipynb,
+                                    canonical: false}
+    alignment_flip_y:              {source: data-inspection, notebook: 5.configure_merge_params.ipynb,
+                                    canonical: false}
+    alignment_rotate_90:           {source: data-inspection, notebook: 5.configure_merge_params.ipynb,
+                                    canonical: false}
+
+    initial_sites:                 {source: tuning,          notebook: 5.configure_merge_params.ipynb,
+                                    fixture_value: [[5, 0], [141, 32]]}
+    det_range:                     {source: tuning,          notebook: 5.configure_merge_params.ipynb,
+                                    fixture_value: [0.06, 0.065]}
+    score:                         {source: tuning,          notebook: 5.configure_merge_params.ipynb,
+                                    canonical: 0.1,
+                                    reason: "review: tuned in nb 5 or universal default?"}  # review
+    threshold:                     {source: tuning,          notebook: 5.configure_merge_params.ipynb,
+                                    canonical: 2,
+                                    reason: "review: tuned in nb 5 or universal default?"}  # review
+
+    approach:                      {source: data-inspection, notebook: 3_merge.py,
+                                    canonical: fast, accepted: [fast, positions],
+                                    reason: "MERGE_APPROACH, derived from phenotype cells per tile or objective"}
+    flipud:                        {source: default,         canonical: false, conditional_on: approach}
+    fliplr:                        {source: default,         canonical: false, conditional_on: approach}
+    rot90:                         {source: default,         canonical: 0, conditional_on: approach}
+    positions_image_qc:            {source: default,         canonical: false, conditional_on: approach}
+    sbs_dedup_prior:               {source: default,         canonical: {mapped_single_gene: false, fov_distance_1: true}}
+    pheno_dedup_prior:             {source: default,         canonical: {fov_distance_0: true}}
+
+  classify:
+    # Notebook 7. Classifier choice is operator decision (skip vs.
+    # which model). class_title/mapping/confidence_thresholds depend
+    # on which classifier you chose.
+    classifier_path:               {source: operator,        reason: "screen-specific model OR null to skip",
+                                    allow_null: true}
+    metadata_cols_fp:              {source: operator,        reason: "operator-curated metadata cols table"}
+
+    class_title:                   {source: tuning,          notebook: 7.configure_classify_params.ipynb,
+                                    conditional_on: classifier_path}
+    class_mapping:                 {source: tuning,          notebook: 7.configure_classify_params.ipynb,
+                                    conditional_on: classifier_path}
+    confidence_thresholds:         {source: tuning,          notebook: 7.configure_classify_params.ipynb,
+                                    conditional_on: classifier_path,
+                                    reason: "look at calibration / confusion before setting"}
+
+  aggregate:
+    # Notebook 8. Operator supplies combos + library column names.
+    # Notebook tunes filter thresholds and the bootstrap_combinations
+    # set after looking at feature distributions.
+    aggregate_combo_fp:            {source: operator,        reason: "operator-curated combo table"}
+    metadata_cols_fp:              {source: operator,        reason: "operator-curated metadata cols table"}
+    collapse_cols:                 {source: operator,        reason: "library barcode column names"}
+    perturbation_id_col:           {source: operator,        follows: collapse_cols}
+    perturbation_name_col:         {source: operator,        reason: "library gene column name"}
+    control_key:                   {source: operator,        reason: "library control identifier"}
+    control_name_col:              {source: operator,        reason: "control name column when it differs from perturbation_name_col"}
+    tvn_batch_correction:          {source: default,         canonical: true}
+    split_by_compartment:          {source: default,         canonical: false}
+    second_obj_agg_strategy:       {source: default,         canonical: none,
+                                    accepted: [none, single, all, average]}
+    generate_montages:             {source: default,         canonical: true}
+    well_annotations_fp:           {source: operator,        reason: "per-well annotation table"}
+    split_col:                     {source: default,         canonical: class}
+    group_cols:                    {source: operator,        reason: "grouped aggregation columns"}
+    bootstrap_control_scope:       {source: default,         canonical: pooled,
+                                    accepted: [pooled, within_group, reference_group, within_perturbation]}
+    bootstrap_reference_group:     {source: operator,        reason: "vehicle group for reference_group and within_perturbation scopes"}
+
+    drop_cols_threshold:           {source: tuning,          notebook: 8.configure_aggregate_params.ipynb,
+                                    canonical: 0.1}
+    drop_rows_threshold:           {source: tuning,          notebook: 8.configure_aggregate_params.ipynb,
+                                    canonical: 0.01}
+    contamination:                 {source: tuning,          notebook: 8.configure_aggregate_params.ipynb,
+                                    canonical: 0.01}
+    variance_or_ncomp:             {source: tuning,          notebook: 8.configure_aggregate_params.ipynb,
+                                    canonical: 0.99}
+    feature_normalization:         {source: tuning,          notebook: 8.configure_aggregate_params.ipynb,
+                                    canonical: mad}
+    skip_perturbation_score:       {source: tuning,          notebook: 8.configure_aggregate_params.ipynb,
+                                    canonical: true}
+    ps_probability_threshold:      {source: tuning,          notebook: 8.configure_aggregate_params.ipynb,
+                                    canonical: null, allow_null: true,
+                                    conditional_on: skip_perturbation_score}
+    ps_percentile_threshold:       {source: tuning,          notebook: 8.configure_aggregate_params.ipynb,
+                                    canonical: null, allow_null: true,
+                                    conditional_on: skip_perturbation_score}
+    bootstrap_combinations:        {source: tuning,          notebook: 8.configure_aggregate_params.ipynb,
+                                    conditional_on: classifier_path,
+                                    reason: "depends on which cell_classes have data"}
+
+    agg_method:                    {source: default,         canonical: median}
+    batch_cols:                    {source: default,         canonical: [plate, well]}
+    filter_queries:                {source: default,         canonical: ["mapped_single_gene == True"]}
+    impute:                        {source: default,         canonical: true}
+    num_align_batches:             {source: default,         canonical: 1}
+    ps_auc_threshold:              {source: default,         canonical: 0.6}
+    perturbation_score_threshold:  {source: default,         canonical: 0.5}
+    num_sims:                      {source: default,         canonical: 100}
+    exclusion_string:              {source: default,         canonical: null, allow_null: true}
+
+  cluster:
+    # Notebook 10. Operator provides combo + benchmark file paths.
+    # Tuning sweeps leiden_resolutions / inspects PHATE embeddings.
+    cluster_combo_fp:              {source: operator,        reason: "operator-curated cluster combo table"}
+    control_scope:                 {source: default,         canonical: pooled,
+                                    accepted: [pooled, within_group, reference_group, within_perturbation]}
+    control_reference_group:       {source: operator,        reason: "vehicle group for reference_group and within_perturbation scopes"}
+    control_key:                   {source: default,         canonical: null, allow_null: true}
+    uniprot_data_fp:               {source: operator,        reason: "benchmark file path",
+                                    canonical: config/benchmark_clusters/uniprot_data.tsv}
+    corum_group_benchmark_fp:      {source: operator,        reason: "benchmark file path",
+                                    canonical: config/benchmark_clusters/corum_group_benchmark.tsv}
+    kegg_group_benchmark_fp:       {source: operator,        reason: "benchmark file path",
+                                    canonical: config/benchmark_clusters/kegg_group_benchmark.tsv}
+    string_pair_benchmark_fp:      {source: operator,        reason: "benchmark file path",
+                                    canonical: config/benchmark_clusters/string_pair_benchmark.tsv}
+
+    leiden_resolutions:            {source: tuning,          notebook: 10.configure_cluster_params.ipynb,
+                                    canonical: [2, 3, 4, 5, 6, 7, 8, 9, 10]}
+    min_cell_cutoffs:              {source: tuning,          notebook: 10.configure_cluster_params.ipynb,
+                                    canonical: {all: 5, Interphase: 5, Mitotic: 5}}
+    perturbation_auc_threshold:    {source: tuning,          notebook: 10.configure_cluster_params.ipynb,
+                                    canonical: null, allow_null: true}
+
+    phate_distance_metric:         {source: default,         canonical: euclidean}
+
+  mozzarellm:
+    # Notebook 12. combo_fp names the table of clusterings the stage annotates,
+    # one job per row; the three selection keys below are the clustering the
+    # visualizer opens on; the rest are the LLM call itself.
+    # Each row's screen description is written beside the table, not a config key.
+    combo_fp:                      {source: tuning,          notebook: 7_analyze.py,
+                                    reason: "notebook-written table of the clusterings to annotate",
+                                    canonical: config/mozzarellm_combo.tsv}
+    screen_name:                   {source: tuning,          notebook: 7_analyze.py,
+                                    reason: "derived from screen.yaml; prefixes each run's output files"}
+
+    cell_class:                    {source: tuning,          notebook: 7_analyze.py,
+                                    reason: "one of the cluster combo's cell classes"}
+    channel_combo:                 {source: tuning,          notebook: 7_analyze.py,
+                                    reason: "one of the cluster combo's channel combinations"}
+    compartment_combo:             {source: tuning,          notebook: 7_analyze.py,
+                                    reason: "one of the aggregate compartment combos, written only when splitting",
+                                    canonical: null, allow_null: true}
+    leiden_resolution:             {source: tuning,          notebook: 7_analyze.py,
+                                    reason: "the resolution the benchmark search ranked best"}
+
+    model:                         {source: default,         canonical: claude-sonnet-5}
+    mode:                          {source: default,         canonical: cot,
+                                    accepted: [standard, cot, stepwise]}
+    mcp:                           {source: default,         canonical: true}
+    source:                        {source: default,         canonical: affinage,
+                                    accepted: [affinage, uniprot, both]}
+    include_features:              {source: default,         canonical: auto}
+    include_strength:              {source: default,         canonical: auto}
+    n_features:                    {source: default,         canonical: 5}
+    fdr_threshold:                 {source: default,         canonical: null, allow_null: true}
+    max_tokens:                    {source: default,         canonical: 64000}
+    run_name:                      {source: default,         canonical: run1}
+    max_workers:                   {source: default,         canonical: 8}
+    max_failed_clusters:           {source: default,         canonical: 2}
+    runtime:                       {source: default,         canonical: 720}

@@ -1,0 +1,11 @@
+# Dev/test dependencies for the brieflow-auto plugin.
+#
+# The canonical list now lives in pyproject.toml under
+# [project.optional-dependencies].dev (plus the runtime deps in
+# [project].dependencies) — this file just installs the plugin editable with
+# those extras, so `uv pip install -r requirements-dev.txt` (used by
+# `make test-env`) and `uv pip install -e .[dev]` are equivalent and can't drift.
+#
+# The editable install also puts the flat `scripts/` modules on sys.path as
+# top-level modules, so `import brieflow_wizard` works without a PYTHONPATH.
+-e .[dev]

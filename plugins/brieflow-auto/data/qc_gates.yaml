@@ -1,0 +1,54 @@
+# Lab-wide QC thresholds. Rates are 0-1. Single home for "what passes";
+# lab_defaults.yaml references/overrides this.
+#
+# phase_qc: post-phase (full-run) gates — read by build_phase_qc / phase_gates.
+# sweep_qc: per-tile (sweep-run) gates — read by parse_qc_block / sweep_gates.
+#            Only the threshold VALUE lives here; op/direction stay in _QC_PATTERNS.
+preprocess: {}
+sbs:
+  phase_qc:
+    # BARCODE-level (see brieflow_qc.extract_sbs_qc). min lowered 0.35 -> 0.25 on
+    # operator call 2026-08-28 ("these rates are fine for full runs"): four plates of a
+    # combinatorial SBS screen ran 0.29-0.58 single-barcode.
+    single_map_rate:  {min: 0.25, warn: 0.40}
+    any_map_rate:     {min: 0.30, warn: 0.50}
+    cell_retention:   {min: 0.80, warn: 0.90}
+    nuclei_retention: {min: 0.80, warn: 0.90}
+  sweep_qc:
+    cycle_dapi_shift_residual_max_px: {max: 10.0}
+    # intra_cycle_channel_shift_residual_max_px is INFO-ONLY (parsed, never gated) — F02: diagnostic of optics, not basecall correctness
+phenotype:
+  # The retention gates were set on HeLa (cell ~75 px on 2400 px tiles). Edge removal alone
+  # drops cells within one diameter of a tile edge, so these gates scale with the screen's
+  # keep = ((T - d) / T)^2 relative to this reference (brieflow_qc.edge_scaled_gate).
+  edge_reference: {cell_diameter_px: 75, tile_px: 2400, metrics: [cell_retention, nuclei_retention]}
+  phase_qc:
+    cell_retention:   {min: 0.75, warn: 0.85}
+    nuclei_retention: {min: 0.75, warn: 0.85}
+  sweep_qc:   # PROVISIONAL seeds — no cross-screen capture yet; revisit after a real sweep run
+    cells_with_1_nucleus_frac: {min: 0.95}
+    cell_area_cv:              {max: 0.6}
+    mean_nuclear_solidity:     {min: 0.9}
+merge:
+  phase_qc:
+    # These two measure whether MERGE worked. One screen 2026-08-31: 0.897 / 0.657.
+    ph_recovery_rate:  {min: 0.50, warn: 0.65}
+    # sbs_recovery_rate is reported, not gated: when phenotype tiles cover only part of
+    # each SBS field its ceiling is ~ph_cells/sbs_cells (0.23 on the small test, a correct
+    # merge). recovery_of_reachable divides matched cells by min(ph_cells, sbs_cells).
+    recovery_of_reachable: {min: 0.50, warn: 0.65}
+    # single_gene_rate is set UPSTREAM by library match — the gap to barcode-level
+    # is cells whose called barcode is not in the library, and no merge parameter
+    # moves it. Gating merge on it repeats the v0.5.9 mistake of gating a phase on
+    # something it does not control (it blocked a screen at 0.289 while both recovery
+    # rates passed). min now catches only a collapsed barcode->gene join; the real
+    # number is reported and warns across the observed range.
+    single_gene_rate:  {min: 0.02, warn: 0.30}
+aggregate:
+  phase_qc:
+    mean_percent_na: {max: 0.40, warn: 0.30}
+cluster:
+  phase_qc:
+    best_recall:                  {min: 0.10, warn: 0.15}
+    recall_at_target_granularity: {min: 0.08, warn: 0.13}
+    # genes_per_cluster_at_target uses a warn-BAND from lab_defaults (target ± tolerance), handled in code

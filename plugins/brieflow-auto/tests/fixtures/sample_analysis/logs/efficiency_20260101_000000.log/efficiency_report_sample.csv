@@ -1,0 +1,6 @@
+,JobID,JobName,RuleName,Elapsed,TotalCPU,NNodes,NCPUS,MaxRSS,ReqMem,Elapsed_sec,TotalCPU_sec,MaxRSS_MB,RequestedMem_MB,MainJobID,CPU Efficiency (%),Memory Usage (%)
+0,1000001.0,python3,rule_convert_phenotype_wildcards_1_A1_001,00:00:30,00:00:10,1,1,500M,,30.0,10.0,500.0,3000.0,1000001,33.3,16.7
+1,1000002.0,python3,rule_convert_phenotype_wildcards_1_A1_002,00:00:30,00:00:10,1,1,800M,,30.0,10.0,800.0,3000.0,1000002,33.3,26.7
+2,1000003.0,python3,rule_convert_phenotype_wildcards_1_A1_003,00:00:30,00:00:10,1,1,1200M,,30.0,10.0,1200.0,3000.0,1000003,33.3,40.0
+3,2000001.0,python3,rule_merge_phenotype_wildcards_1_A1,00:30:00,00:25:00,1,4,31000M,,1800.0,1500.0,31000.0,32000.0,2000001,75.0,96.9
+4,3000001.0,python3,rule_align_sbs_wildcards_1_A1_001,00:01:00,00:00:30,1,1,400M,,60.0,30.0,400.0,2000.0,3000001,50.0,20.0

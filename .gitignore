@@ -1,0 +1,28 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Python build artifacts (editable install of the plugin package)
+*.egg-info/
+build/
+dist/
+
+# OS + session/harness cruft
+.DS_Store
+tmp/
+.agents/
+.claude/
+skills-lock.json
+
+# interview working artifacts — source of truth is plugins/brieflow-auto/data/interview_template.json
+plugins/brieflow-auto/*.xlsx
+plugins/brieflow-auto/brieflow_interview_*.csv
+~$*
+
+# Development notes, specs, plans and working history. Kept locally, not shipped:
+# the repo ships the plugin and the harness docs at the root. One file under it stays
+# tracked (git keeps tracking it despite this rule):
+# docs/superpowers/plans/2026-06-07-interview-spec.csv, read by
+# plugins/brieflow-auto/tests/test_template_consistency.py.
+docs/

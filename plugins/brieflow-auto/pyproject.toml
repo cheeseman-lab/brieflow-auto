@@ -1,0 +1,112 @@
+# brieflow-auto — packaging + tooling source of truth.
+#
+# Blueprint note (this plugin is intended as a template for harnessing other
+# long-running pipelines): the harness is a flat namespace of `brieflow_*`
+# modules under `scripts/`, invoked two ways —
+#   1. by path, as scripts (`python scripts/brieflow_runloop.py ...`) from
+#      bin/, cloud/, the skills, and the pipeline's flow.sh; and
+#   2. by name, as imports (`import brieflow_wizard`) from tests and skill glue.
+# Rather than relocate the files (which would break every by-path caller and the
+# installed-cache paths the skills hard-code), we declare them in place via
+# `package-dir = {"" = "scripts"}` + an explicit `py-modules` list. An editable
+# install (`pip install -e .[dev]`) then puts them on `sys.path` as top-level
+# modules, so the per-script `sys.path.insert(...)` bootstraps and ad-hoc
+# `PYTHONPATH=.../scripts` conventions become unnecessary.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brieflow-auto"
+version = "0.5.43"
+description = "Autonomous harness for orchestrating long-running brieflow OPS pipelines on cloud and slurm."
+license = {text = "MIT"}
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml",
+    "pandas",
+    "pyarrow",
+    "nd2",
+]
+
+[project.optional-dependencies]
+# Test/dev tooling. marimo is PINNED to the version the kernel-lifecycle
+# contract (brieflow_marimo.py / brieflow_sweep.py) was written against; the
+# live-kernel test (tests/test_marimo_live.py) drives a real headless server,
+# so the pin keeps that contract reproducible.
+dev = [
+    "pytest",
+    "ruff",
+    "marimo==0.25.0",
+    "nest_asyncio",
+]
+
+[tool.setuptools]
+# Flat modules live in scripts/ and stay there (see blueprint note above).
+package-dir = {"" = "scripts"}
+py-modules = [
+    "_ws_holder",
+    "brieflow_aggregate_efficiency",
+    "brieflow_backend",
+    "brieflow_base_order_probe",
+    "brieflow_buckets",
+    "brieflow_cell_runner",
+    "brieflow_channels",
+    "brieflow_classify",
+    "brieflow_compute",
+    "brieflow_connection",
+    "brieflow_decisions",
+    "brieflow_diag",
+    "brieflow_disk",
+    "brieflow_driver_watchdog",
+    "brieflow_dryrun_preview",
+    "brieflow_dye_balance_probe",
+    "brieflow_failure_logs",
+    "brieflow_findings",
+    "brieflow_hooks",
+    "brieflow_improve",
+    "brieflow_interview",
+    "brieflow_issue",
+    "brieflow_issue_draft",
+    "brieflow_launch_review",
+    "brieflow_manifest",
+    "brieflow_marimo",
+    "brieflow_markers",
+    "brieflow_monitor",
+    "brieflow_notebook_ops",
+    "brieflow_phases",
+    "brieflow_preflight",
+    "brieflow_probe",
+    "brieflow_qc",
+    "brieflow_recover",
+    "brieflow_reorder_channels",
+    "brieflow_resolve_resources",
+    "brieflow_resolvers",
+    "brieflow_rollout_hook",
+    "brieflow_run",
+    "brieflow_runloop",
+    "brieflow_runner",
+    "brieflow_screen_geometry",
+    "brieflow_screen_yaml",
+    "brieflow_smoketest",
+    "brieflow_sweep",
+    "brieflow_sweep_alloc",
+    "brieflow_tiles",
+    "brieflow_trace",
+    "brieflow_validate_tree",
+    "brieflow_watch",
+    "brieflow_well_annotations",
+    "brieflow_wizard",
+]
+
+[tool.pytest.ini_options]
+# `pythonpath` makes the flat modules importable in-tree without an install,
+# so `pytest` works straight from a checkout (CI, fresh clone) as well as from
+# an editable install.
+testpaths = ["tests"]
+pythonpath = ["scripts"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

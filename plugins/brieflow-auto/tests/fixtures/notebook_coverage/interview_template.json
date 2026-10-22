@@ -1,0 +1,7 @@
+{
+  "params": [
+    {"param_name": "SAMPLE_FRACTION", "notebook": "clean", "bucket": "user"},
+    {"param_name": "CELL_DIAMETER", "notebook": "clean", "bucket": "user"},
+    {"param_name": "STRAY_KNOB", "notebook": "unpatchable", "bucket": "user"}
+  ]
+}

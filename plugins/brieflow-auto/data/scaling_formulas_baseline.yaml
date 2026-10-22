@@ -1,0 +1,188 @@
+# brieflow scaling formulas — baseline table (HARDENING_TODO #23).
+#
+# Per-rule mem_mb formula evaluated against screen geometry. Used as the
+# fallback when an analysis dir doesn't have its own
+# slurm/scaling_formulas.yaml override.
+#
+# Bootstrapped from reference-screen observations (runs v15 → v34,
+# 1 plate × 6 wells × 9 SBS cycles × 333 SBS tiles/well × 4 channels;
+# 1 phenotype round × 1281 tiles/well × 4 channels; library ≈504 genes /
+# 2116 sgRNAs).
+#
+# scaling label (closed enum — see brieflow_resolve_resources.py):
+#   constant                       mem_mb is flat per job
+#   per_tile                       N=1 (functionally constant per job)
+#   per_well_sbs                   N=n_tiles_per_well_sbs
+#   per_well_phenotype             N=n_tiles_per_well_phenotype
+#   per_well_per_cycle_sbs         N=n_tiles_per_well_per_cycle_sbs
+#   per_well_per_round_phenotype   N=n_tiles_per_well_per_round_phenotype
+#   per_well_per_combo             N=n_channel_combos
+#   per_perturbation               N=sgRNAs_per_gene_max
+#   per_plate                      N=n_plates
+#
+# formula: mem_mb = (k_mb * N + b_mb) * margin   for non-constant scalings
+#          mem_mb = mem_mb * margin              for constant, and per_tile given as mem_mb
+# sample_fraction_ref (optional): N is scaled by the screen's preprocess
+#          sample_fraction / sample_fraction_ref (the fraction the fit was made at).
+#
+# margin defaults to 1.0 — most baseline mem_mb values are already
+# safety-loaded (1.5× observed peak) from aggregate_efficiency, so a
+# second margin pass would double-count.
+#
+# Per-screen overrides go in <analysis-dir>/slurm/scaling_formulas.yaml
+# (same schema; only listed rules override, the rest fall through to this
+# baseline).
+
+defaults:
+  margin: 1.0
+
+rules:
+
+  # ---- preprocess ----
+  convert_sbs:                    {scaling: per_tile, mem_mb: 3100}
+  convert_phenotype:              {scaling: per_tile, mem_mb: 3600}
+  convert_ph:                     {scaling: per_tile, mem_mb: 3600}
+  extract_metadata_sbs:           {scaling: per_tile, mem_mb: 21900}
+  extract_metadata_phenotype:     {scaling: per_tile, mem_mb: 191300}
+  combine_metadata_sbs:           {scaling: per_well_phenotype, k_mb: 2, b_mb: 1000}
+  combine_metadata_phenotype:     {scaling: per_well_phenotype, k_mb: 2, b_mb: 1000}
+  calculate_ic_sbs:
+    # SBS IC scales with tiles per (well, cycle) — fitting to the reference screen:
+    # peak 28500 / 333 tiles ≈ 85 MB/tile + small overhead. Conservative
+    # k=100, b=2000 → at the reference screen's geometry (333) gives 35300 MB.
+    scaling: per_well_per_cycle_sbs
+    k_mb: 100
+    b_mb: 2000
+    margin: 1.0
+    # The reference screen ran at preprocess sample_fraction 0.5; N scales by fraction / 0.5.
+    sample_fraction_ref: 0.5
+  calculate_ic_phenotype:
+    # peak 323100 / 1281 ≈ 252 MB/tile + overhead. k=270, b=2000 →
+    # 348000 MB at the reference screen's geometry. Hot path; keep margin tight.
+    scaling: per_well_per_round_phenotype
+    k_mb: 270
+    b_mb: 2000
+    margin: 1.0
+    sample_fraction_ref: 0.5
+
+  # ---- sbs per-tile (group) ----
+  # All per-tile group constituents share the same cap via sbs_tile_group.
+  # Keep them as per_tile so the resolver emits a cap; sbs_tile_group is
+  # the one the slurm submission uses.
+  sbs_tile_group:                 {scaling: per_tile, mem_mb: 9600}
+  align_sbs:                      {scaling: per_tile, mem_mb: 9600}
+  log_filter:                     {scaling: per_tile, mem_mb: 9600}
+  compute_standard_deviation:     {scaling: per_tile, mem_mb: 9600}
+  find_peaks:                     {scaling: per_tile, mem_mb: 9600}
+  max_filter:                     {scaling: per_tile, mem_mb: 9600}
+  apply_ic_field_sbs:             {scaling: per_tile, mem_mb: 9600}
+  segment_sbs:                    {scaling: per_tile, mem_mb: 9600}
+  extract_bases:                  {scaling: per_tile, mem_mb: 9600}
+  call_reads:                     {scaling: per_tile, mem_mb: 9600}
+  call_cells:                     {scaling: per_tile, mem_mb: 9600}
+  extract_sbs_info:               {scaling: per_tile, mem_mb: 9600}
+
+  # ---- sbs aggregation ----
+  combine_reads:                  {scaling: per_well_sbs, k_mb: 30, b_mb: 6000}
+  combine_cells:                  {scaling: per_well_sbs, k_mb: 12, b_mb: 3000}
+  combine_sbs_info:               {scaling: per_well_sbs, k_mb: 6, b_mb: 1600}
+
+  # ---- phenotype per-tile (group) ----
+  phenotype_tile_group:           {scaling: per_tile, mem_mb: 6400}
+  align_phenotype:                {scaling: per_tile, mem_mb: 6400}
+  apply_ic_field_phenotype:       {scaling: per_tile, mem_mb: 6400}
+  segment_phenotype:              {scaling: per_tile, mem_mb: 6400}
+  identify_cytoplasm:             {scaling: per_tile, mem_mb: 6400}
+  extract_phenotype_info:         {scaling: per_tile, mem_mb: 6400}
+  extract_phenotype:              {scaling: per_tile, mem_mb: 6400}
+  extract_phenotype_cp:           {scaling: per_tile, mem_mb: 6400}
+
+  # ---- phenotype aggregation ----
+  combine_phenotype_info:         {scaling: per_well_phenotype, k_mb: 3, b_mb: 0}
+  merge_phenotype:
+    # 128 GB cap was observed peak ~83 GB on the reference screen (1281 tiles). k=100,
+    # b=0 → 128 GB at the reference screen's geometry. Manual_override still wins via
+    # mem_recs layer if operator bumps further.
+    scaling: per_well_phenotype
+    k_mb: 100
+    b_mb: 0
+  eval_features:                  {scaling: per_well_phenotype, k_mb: 5, b_mb: 0}
+  eval_segmentation_phenotype:    {scaling: per_well_phenotype, k_mb: 7, b_mb: 0}
+  eval_segmentation_sbs:          {scaling: per_well_sbs, k_mb: 35, b_mb: 0}
+
+  # ---- merge ----
+  merge:                          {scaling: per_well_phenotype, k_mb: 15, b_mb: 1000}
+  merge_phenotype_cp:             {scaling: per_well_phenotype, k_mb: 240, b_mb: 0}
+  deduplicate_merge:              {scaling: per_well_phenotype, k_mb: 15, b_mb: 0}
+  format_merge:                   {scaling: per_well_phenotype, k_mb: 12, b_mb: 0}
+  clean_merge:                    {scaling: per_well_phenotype, k_mb: 16, b_mb: 0}
+  fast_alignment:                 {scaling: per_well_phenotype, k_mb: 21, b_mb: 0}
+  fast_merge:                     {scaling: per_well_phenotype, k_mb: 6, b_mb: 0}
+  positions_merge:
+    # one job per well, ~2 GB; merge.positions_image_qc needs ~8 GB (override per screen)
+    scaling: constant
+    mem_mb: 2000
+  align:                          {scaling: per_well_phenotype, k_mb: 44, b_mb: 0}
+  final_merge:                    {scaling: per_well_phenotype, k_mb: 470, b_mb: 0}
+  eval_merge:                     {scaling: per_well_phenotype, k_mb: 53, b_mb: 0}
+  eval_mapping:                   {scaling: per_well_phenotype, k_mb: 47, b_mb: 0}
+  filter:                         {scaling: per_well_phenotype, k_mb: 86, b_mb: 0}
+
+  # ---- aggregate ----
+  split_datasets:
+    # 160 GB cap; correlates with cells×channels in the combo. Baseline
+    # constant until per_combo cell counts are probed.
+    scaling: constant
+    mem_mb: 160200
+  aggregate:                      {scaling: constant, mem_mb: 25200}
+  clean_aggregate:                {scaling: constant, mem_mb: 4000}
+  eval_aggregate:                 {scaling: constant, mem_mb: 41300}
+  generate_feature_table:         {scaling: constant, mem_mb: 51800}
+  prepare_bootstrap_data:
+    # Library-size dependent. reference screen: 504 genes ≈ 48 GB. Use per_plate as
+    # rough proxy until per-library probe lands.
+    scaling: constant
+    mem_mb: 48000
+  initiate_bootstrap:             {scaling: constant, mem_mb: 3000}
+  bootstrap_gene:
+    # One job per gene since brieflow #329 (constructs simulated in-job, no null arrays held).
+    # Peak measured under the old per-gene null stacking: 6377 MB; kept until re-observed.
+    scaling: constant
+    mem_mb: 8000
+  combine_bootstrap:              {scaling: constant, mem_mb: 5200}
+
+  # ---- cluster ----
+  phate_leiden_clustering:
+    # Library-size dependent via feature-table size. reference screen: 40 GB at
+    # ~2.1k sgRNAs. Constant proxy.
+    scaling: constant
+    mem_mb: 40000
+  benchmark_clusters:             {scaling: constant, mem_mb: 40000}
+  format_singlecell_anndata:
+    # reference screen: ~125 GB. damavand: ~350 GB/job observed — 8 concurrent jobs blew
+    # past 2.8 TB at --cores 288 on 2026-06-13 (the resolver wasn't reaching
+    # snakemake then; even once wired, a 125 GB cap under-counts and still
+    # over-schedules). Scales per (well, combo, channels); no calibrated
+    # formula yet, so use a conservative constant that covers the damavand
+    # observation with margin. /brieflow-tune-memory refines it down per-screen
+    # after a clean run (manual_override entries are preserved).
+    scaling: constant
+    mem_mb: 450000
+  format_cluster_anndata:
+    # Builds the per-(cell_class, channel_combo) cluster anndata. Tables are
+    # small post-aggregate, but the rule was UNCOVERED — it fell back to the
+    # 3000 MB default and over-scheduled on the local backend. Conservative
+    # constant cap until a per-screen observation lands.
+    scaling: constant
+    mem_mb: 64000
+  annotate_cluster_anndata:
+    # LLM cluster annotation over the cluster anndata; sized like format_cluster_anndata
+    # until a per-screen observation lands.
+    scaling: constant
+    mem_mb: 64000
+  initiate_montage:               {scaling: constant, mem_mb: 1000}
+  prepare_montage_data:           {scaling: constant, mem_mb: 1500}
+  generate_montage:               {scaling: constant, mem_mb: 4700}
+
+  # ---- viz / misc ----
+  finalize_hcs_phenotype:         {scaling: constant, mem_mb: 13000}

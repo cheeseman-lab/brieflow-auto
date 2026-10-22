@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# brieflow-run — the one entry point for a screen run (whole or partial).
+# Resolves the plugin scripts dir relative to this file and execs the conductor.
+# PYTHON may point at the screen env's interpreter (no conda activate needed).
+set -euo pipefail
+SCRIPTS_DIR="$(cd "$(dirname "$0")/../scripts" && pwd)"
+exec "${PYTHON:-python}" "${SCRIPTS_DIR}/brieflow_run.py" --screen "$@"
