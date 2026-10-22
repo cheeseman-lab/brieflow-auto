@@ -22,6 +22,10 @@ calls it C, so the plate reads C-rich with no error.
   `N_WILDCARD` (1, frac only) and `RECOMB_MAX_N` (2, multi only), with their `lab_defaults.yaml`
   values and spec-CSV rows, so the notebook-parameter coverage check passes on the notebook that
   adds them (brieflow-analysis #130).
+- **Chance-level floor** on `single_gene_map_rate` (fail below 0.02, warn below 0.05). The gated
+  `single_map_rate` counts cells with one dominant read whether or not it is in the library, so a
+  plate decoding at chance passed it (0.339 single-barcode, 0.001 gene). Ten combinatorial plates
+  run 0.107-0.489, the screen behind the 2026-08-28 call 0.164; only the chance-level plate fails.
 
 ## 0.5.43 — 2026-10-22
 

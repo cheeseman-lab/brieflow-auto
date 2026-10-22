@@ -14,6 +14,10 @@ sbs:
     any_map_rate:     {min: 0.30, warn: 0.50}
     cell_retention:   {min: 0.80, warn: 0.90}
     nuclei_retention: {min: 0.80, warn: 0.90}
+    # GENE-level floor only: catches a run decoding at chance (barcodes called, none from
+    # the library). Measured 2026-10-22: ten combinatorial plates 0.107-0.489, the one
+    # at chance 0.001; the 2026-08-28 plate above ran 0.164. Not a quality gate.
+    single_gene_map_rate: {min: 0.02, warn: 0.05}
     # Combinatorial `frac` runs only (brieflow_base_composition). A cycle with all three
     # dyes on ties C and A on a G=[]/T/C/A code; without `combinatorial.ambiguous_call: N`
     # the tie is called C. Measured 2026-10-21 on one plate set: 24-42% of bright cycles

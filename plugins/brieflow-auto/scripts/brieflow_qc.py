@@ -196,7 +196,8 @@ def extract_sbs_qc(phase_root: Path, config: dict | None = None) -> list[Metric]
         # gene-level columns lose 55-68% of barcode-mapped cells and report
         # impossible >100% per-well rates on some plates (2026-08-28: one plate
         # 0.582 barcode vs 0.164 gene; 8 wells >100% on another), so gating on them
-        # fails good screens. Gene-level stays as an ungated metric.
+        # fails good screens. Gene-level gets only a low floor (qc_gates.yaml) that
+        # catches decoding at chance: many single-barcode cells, almost none in the library.
         single = float(map_df["1_barcode_cells__count"].sum())
         anyb = float(map_df["1_or_more_barcodes__count"].sum())
         src = str(mp_files[0])
