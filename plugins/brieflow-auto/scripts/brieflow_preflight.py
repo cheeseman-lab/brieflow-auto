@@ -333,15 +333,12 @@ class BrieflowSurface:
 # segment_secondary_object.estimate_second_obj_diameter added 2026-09-09: a
 # notebook-only helper with no caller in workflow/, whose bare `method` key
 # otherwise matched `sbs.method` and blocked a valid four_color config.
-# shared/cellpose_training.py `mode` added 2026-10-06: a function argument that
-# matched the mozzarellm `mode: cot` key and blocked a valid aggregate config.
 _LIB_INTERNAL_GUARD_ALLOWLIST = {
     ("cluster/cluster_eval.py", "metric"),
     ("classify/train.py", "scaler_type"),
     ("classify/train.py", "model_type"),
     ("cluster/cluster_analysis.py", "normalize_method"),
     ("phenotype/segment_secondary_object.py", "method"),
-    ("shared/cellpose_training.py", "mode"),
 }
 
 

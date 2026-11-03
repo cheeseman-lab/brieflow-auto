@@ -1,6 +1,6 @@
 {
   "name": "brieflow-auto",
-  "version": "0.5.43",
+  "version": "0.5.44",
   "description": "End-to-end management of brieflow optical pooled screens \u2014 screen.yaml-driven interview with a five-source resolution taxonomy, data auto-probes, per-phase notebook configuration + live marimo sweeps, preflight validation, autonomous OOM recovery, QC gating, and unattended full-screen runs.",
   "author": {
     "name": "Matteo Di Bernardo"

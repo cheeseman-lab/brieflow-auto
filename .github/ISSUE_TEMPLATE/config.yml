@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Brieflow pipeline bug
+    url: https://github.com/cheeseman-lab/brieflow/issues/new/choose
+    about: A defect in brieflow itself (rules, scripts, lib, notebooks) goes to the brieflow repository.
+  - name: Question or screen discussion
+    url: https://github.com/cheeseman-lab/brieflow/discussions
+    about: Ask questions and share approaches in brieflow's GitHub Discussions.

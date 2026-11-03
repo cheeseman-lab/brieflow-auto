@@ -206,6 +206,12 @@ S6  Repo setup                         git clone <repo URL> \
                                           $BRIEFLOW_DATA_ROOT/<screen>-analysis
                                        cd $BRIEFLOW_DATA_ROOT/<screen>-analysis
                                        git submodule update --init --recursive
+                                       git -C brieflow describe --tags
+                                          # must be v1.5.0 or later; an older
+                                          # template (Jupyter notebooks, no
+                                          # analysis/screen.yaml) → stop, the
+                                          # operator re-creates the repo from
+                                          # the current brieflow-analysis
                                        conda create -n brieflow_<screen> \
                                           -c conda-forge python=3.12 uv pip -y
                                        conda activate brieflow_<screen>
@@ -469,7 +475,7 @@ hand-written profile entry) is a finding: call `record_finding()` (router rule R
 - [`references/gcp_bootstrap.md`](references/gcp_bootstrap.md) — **start here** for one-time GCP project setup
 - [`references/cloud_flow.md`](references/cloud_flow.md) — per-stage cloud walkthrough (operator-readable)
 - [`references/setup_state_schema.md`](references/setup_state_schema.md) — optional `setup_state.json` schema for re-entrance
-- [`references/conda_env.md`](references/conda_env.md) — env build notes (zarr3-era caveats)
+- [`references/conda_env.md`](references/conda_env.md) — env build notes (brieflow 1.5 caveats)
 - [`references/teardown_flow.md`](references/teardown_flow.md) — end-of-screen teardown: parallel per-subtree rsync, gcloud regex pitfalls, verification, boot-disk snapshot for cheap respin
 - [`references/machine_handoff.md`](references/machine_handoff.md) — mid-run VM switch (GPU↔CPU by phase class): same-zone disk reattach not copy, downsize-on-stockout, mtime-scramble→rerun-cascade avoidance
 - `cloud/*.sh` — shipped helper scripts: `preflight_quota.sh` (pre-provision quota check), `provision_vm.sh`, `transfer_hpc_to_gcs.sh` (bounded-retry rsync), `transfer_local_to_gcs.sh`, `teardown_vm.sh`, `_common.sh`

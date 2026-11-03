@@ -78,7 +78,7 @@ eval "$("$HOME/miniforge3/bin/conda" shell.bash hook)" && conda init bash
 
 ```bash
 # Create screen-specific conda environment
-# Use python=3.12 (not 3.11 — the zarr3 brieflow line requires 3.12)
+# Use python=3.12 (not 3.11 — brieflow 1.5 requires 3.12)
 conda create -n brieflow_SCREEN_NAME -c conda-forge python=3.12 uv pip -y
 conda activate brieflow_SCREEN_NAME
 
@@ -234,4 +234,4 @@ slurm:
 - **Brieflow source**: https://github.com/cheeseman-lab/brieflow
 - **Brieflow-analysis template**: https://github.com/cheeseman-lab/brieflow-analysis
 - **Docs**: https://brieflow.readthedocs.io
-- **Discord**: https://discord.gg/yrEh6GP8JJ
+- **Questions**: https://github.com/cheeseman-lab/brieflow/discussions

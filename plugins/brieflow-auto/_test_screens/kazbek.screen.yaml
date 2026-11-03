@@ -167,7 +167,7 @@ microscope:
 # =========================================================================
 pipeline:
   github: "cheeseman-lab/brieflow"
-  version: null                                   # branch or tag (e.g. "zarr3-merge-main-speed")
+  version: null                                   # branch or tag (e.g. "main" or a release tag)
   conda_env: null                                 # e.g. "brieflow_<screen>"
 
 # =========================================================================

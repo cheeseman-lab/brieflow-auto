@@ -265,7 +265,7 @@ def _compute_barcode_cycle_positions(screen: dict) -> dict | None:
     `library.sequencing_order` + `library.barcode_length_map` +
     `library.barcode_length_recomb`. Returns None if any input is missing.
 
-    Mirrors `lib.sbs.barcode_cycle_utils.compute_barcode_cycle_positions`,
+    Mirrors the SBS notebook's `MAP_START`/`RECOMB_START` derivation (passed to `lib.sbs.call_cells`),
     INCLUDING skip cycles: `library.skip_cycles` (1-based SBS cycle numbers, e.g.
     ``[6]`` for a cycle that failed to align) is the one operator knob. Skipped
     cycles are dropped from the aligned stack by `align_cycles`, so the read

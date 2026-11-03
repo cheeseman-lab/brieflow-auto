@@ -56,12 +56,3 @@ def test_underscore_channel_passes_once_brieflow_parses_combos(tmp_path):
     split.write_text("channel_combo_list = parse_channel_combo(channel_combo, all_channels)\n")
     assert pf.validate_channel_conventions(analysis, tmp_path / "bf") == []
 
-
-def test_cellpose_training_mode_argument_is_not_a_config_guard(tmp_path):
-    pf = _load()
-    lib = tmp_path / "workflow" / "lib"
-    (lib / "shared").mkdir(parents=True)
-    (lib / "shared" / "cellpose_training.py").write_text(
-        'def f(mode):\n    if mode == "cells":\n        pass\n    else:\n'
-        '        raise ValueError(f"Unknown mode: {mode}. Valid options: \'cells\', \'nuclei\'")\n')
-    assert not [g for g in pf.analyze_brieflow(tmp_path).accepted_value_guards if g["key"] == "mode"]

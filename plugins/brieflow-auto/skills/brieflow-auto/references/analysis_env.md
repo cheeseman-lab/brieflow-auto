@@ -115,4 +115,4 @@ the right log — match by output filename grep.
 
 - Docs: https://brieflow.readthedocs.io/
 - Issues: https://github.com/cheeseman-lab/brieflow/issues
-- Discord: https://discord.gg/yrEh6GP8JJ
+- Questions: https://github.com/cheeseman-lab/brieflow/discussions

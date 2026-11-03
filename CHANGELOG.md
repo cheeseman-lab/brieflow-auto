@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.44 — 2026-11-03
+
+Follows brieflow 1.5.0, where `zarr3` became brieflow `main` and the marimo template became
+brieflow-analysis `main` (both tagged `v1.5.0`). Setup checks after cloning that the brieflow
+submodule is v1.5.0 or later and stops on an older template. Questions point to brieflow's GitHub
+Discussions, which replace Discord. The preflight allowlist drops `shared/cellpose_training.py`,
+which brieflow 1.5.0 removed. A new issue chooser sends pipeline bugs to brieflow and questions to
+brieflow Discussions.
+
 ## 0.5.43 — 2026-10-22
 
 First public release, under the MIT license (the same as brieflow). Site-specific paths and
