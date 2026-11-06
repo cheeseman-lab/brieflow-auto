@@ -1,7 +1,7 @@
 {
   "_schema_version": 1,
-  "_csv_sha": "506cdc2cab19",
-  "_n_params": 325,
+  "_csv_sha": "8dfea8dc250a",
+  "_n_params": 326,
   "_generated_from": "2026-06-07-interview-spec.csv",
   "_screen_id": null,
   "_created_at": null,
@@ -50,6 +50,18 @@
       "derivation_source": "lab-default: 1",
       "written_to_config": "all.zarr_max_levels",
       "notes": "\"1 = no pyramid\"  ||  Pyramid levels per converted raw image in zarr mode; 1 writes no pyramid. A viewing convenience (napari) that costs disk; pixels at full resolution never change. Lab convention, not data-derivable.",
+      "value": null,
+      "value_source": null,
+      "set_at": null
+    },
+    {
+      "notebook": "preprocess",
+      "param_name": "TRANSPARENT_FIGURES",
+      "bucket": "override",
+      "default": "\u2014",
+      "derivation_source": "lab-default: False",
+      "written_to_config": "all.transparent_figures",
+      "notes": "\"True = transparent plot backgrounds\"  ||  Save the pipeline's QC, cluster and classifier plots with a transparent background (e.g. for Illustrator) instead of white. A presentation preference, not data-derivable; written to all.transparent_figures.",
       "value": null,
       "value_source": null,
       "set_at": null
