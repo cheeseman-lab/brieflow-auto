@@ -149,7 +149,7 @@ def test_extract_sbs_qc(qc):
     by = {m.name: m for m in metrics}
     # BARCODE-level, count-weighted: (320+300)/(1000+1000) = 0.31
     assert by["single_map_rate"].value == pytest.approx(0.31)
-    # gene-level is reported but NOT gated: (600+500)/2000 = 0.55
+    # gene-level, gated only by a chance-level floor: (600+500)/2000 = 0.55
     assert by["single_gene_map_rate"].value == pytest.approx(0.55)
     assert by["single_map_rate"].unit == "rate"
     # any BARCODE: (940+900)/2000 = 0.92
@@ -709,6 +709,7 @@ def test_pinned_sbs_gates(qc):
     assert pg["any_map_rate"] == {"min": 0.30, "warn": 0.50}
     assert pg["cell_retention"] == {"min": 0.80, "warn": 0.90}
     assert pg["nuclei_retention"] == {"min": 0.80, "warn": 0.90}
+    assert pg["single_gene_map_rate"] == {"min": 0.02, "warn": 0.05}
     sg = qc.sweep_gates(gates, "sbs")
     assert sg["cycle_dapi_shift_residual_max_px"] == {"max": 10.0}
     # intra_cycle is not in sweep_qc (INFO-ONLY — not a gate)
@@ -899,3 +900,21 @@ def test_parse_qc_block_fails_closed_without_a_qc_block(qc):
     assert inherited["qc_missing"] is False and inherited["qc_pass"] is True
     seg = wiz.parse_qc_block("cells_with_1_nucleus_frac: 0.97\n")
     assert seg["qc_missing"] is False and seg["qc_pass"] is True
+
+
+def test_sbs_qc_fails_chance_level_decoding(qc, tmp_path):
+    """Many single-barcode cells but almost none from the library: decoding at chance."""
+    d = tmp_path / "sbs" / "eval" / "mapping" / "1"
+    d.mkdir(parents=True)
+    (d / "mapping_overview.tsv").write_text(
+        "well\ttotal_cells__count\t1_barcode_cells__count\t1_barcode_cells__percent"
+        "\t1_or_more_barcodes__count\t1_or_more_barcodes__percent"
+        "\t1_gene_cells__count\t1_gene_cells__percent\t1_or_more_genes__count\t1_or_more_genes__percent\n"
+        "A1\t10000\t3400\t34.0\t9500\t95.0\t10\t0.1\t10\t0.1\n"
+    )
+    summary = qc.build_phase_qc(tmp_path, "sbs", generated_at="2026-10-22T00:00:00Z")
+    by = {m.name: m for m in summary.metrics if m.level == "phase"}
+    assert by["single_map_rate"].status == "warn"
+    assert by["single_gene_map_rate"].value == pytest.approx(0.001)
+    assert by["single_gene_map_rate"].status == "fail"
+    assert not qc.qc_gate_verdict(summary)["pass"]
