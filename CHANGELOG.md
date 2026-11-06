@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.45 — 2026-11-06
 
 SBS QC reads the called-base mix of a combinatorial `frac` run (`brieflow_base_composition.py`,
 wired into `brieflow_qc.extract_sbs_qc`). On a three-dye code with G blank, a cycle with all
