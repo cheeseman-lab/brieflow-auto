@@ -39,6 +39,10 @@ RULE_MEMORY_PROFILE: dict[str, dict] = {
     "convert_phenotype": {"scales_with": "tile", "dag_sensitive": False},
     "extract_metadata_sbs": {"scales_with": "tile", "dag_sensitive": True},
     "extract_metadata_phenotype": {"scales_with": "tile", "dag_sensitive": True},
+    "convert_sbs_with_metadata": {"scales_with": "tile", "dag_sensitive": False},
+    "convert_phenotype_with_metadata": {"scales_with": "tile", "dag_sensitive": False},
+    "preprocess_sbs": {"scales_with": "tile", "dag_sensitive": False},
+    "preprocess_phenotype": {"scales_with": "tile", "dag_sensitive": False},
     "calculate_ic_sbs": {"scales_with": "well", "dag_sensitive": True},
     "calculate_ic_phenotype": {"scales_with": "well", "dag_sensitive": True},
     "combine_metadata_sbs": {"scales_with": "well", "dag_sensitive": True},
@@ -148,10 +152,37 @@ PHENOTYPE_TILE_GROUP_MEMBERS: tuple[str, ...] = (
     "extract_phenotype_cp",
 )
 
+# brieflow >1.5.0 groups preprocess convert and metadata jobs, many per Slurm job
+PREPROCESS_SBS_GROUP_MEMBERS: tuple[str, ...] = (
+    "convert_sbs",
+    "convert_sbs_with_metadata",
+    "extract_metadata_sbs",
+)
+
+PREPROCESS_PHENOTYPE_GROUP_MEMBERS: tuple[str, ...] = (
+    "convert_phenotype",
+    "convert_phenotype_with_metadata",
+    "extract_metadata_phenotype",
+)
+
 GROUP_MEMBERSHIP: dict[str, tuple[str, ...]] = {
     "sbs_tile_group": SBS_TILE_GROUP_MEMBERS,
     "phenotype_tile_group": PHENOTYPE_TILE_GROUP_MEMBERS,
+    "preprocess_sbs": PREPROCESS_SBS_GROUP_MEMBERS,
+    "preprocess_phenotype": PREPROCESS_PHENOTYPE_GROUP_MEMBERS,
 }
+
+
+def group_of(rule: str) -> str | None:
+    """Return the group a Slurm job name belongs to, or None for a single-rule job.
+
+    A group job is named after its group and then its rules (``preprocess_sbs_convert_sbs``),
+    while a plain job is named after its rule alone (``convert_sbs``).
+    """
+    for group in GROUP_MEMBERSHIP:
+        if rule == group or rule.startswith(group + "_"):
+            return group
+    return None
 
 
 # Recognized markers indicating a manual override to PRESERVE on aggregation.
@@ -201,16 +232,8 @@ def _aggregate_from_csvs(csvs: list[Path]) -> tuple[dict, list[dict]]:
                     parts = rule_raw.split("_wildcards", 1)
                     rule = parts[0].replace("rule_", "")
                     wildcards = parts[1].lstrip("_") if len(parts) == 2 else ""
-                    # sacct truncates RuleName at ~101 chars; tile_group jobs
-                    # are concatenations of every per-tile rule and the
-                    # truncated tail loses the `_wildcards` marker, so the
-                    # generic split above can't normalize them. Map any name
-                    # starting with sbs_tile_group_/phenotype_tile_group_ to
-                    # that prefix bucket.
-                    for prefix in ("sbs_tile_group", "phenotype_tile_group"):
-                        if rule.startswith(prefix + "_") or rule == prefix:
-                            rule = prefix
-                            break
+                    # sacct truncates a group job's RuleName (group + member rules), so map it to its group
+                    rule = group_of(rule) or rule
                     if not rule or rule not in RULE_MEMORY_PROFILE:
                         continue
                     try:

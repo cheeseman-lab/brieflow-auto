@@ -252,6 +252,32 @@ def _slurm_extract_jobid(log_path: Path) -> str | None:
     return None
 
 
+def rules_in_comment(comment: str) -> list[str]:
+    """Rules a Slurm job's ``rule_<name>_wildcards...`` comment names.
+
+    A plain job names one rule. A group job is named after its group and then its
+    member rules (``preprocess_sbs_convert_sbs``), so it expands to the members named.
+    """
+    name = comment[len("rule_") :].split("_wildcards")[0] if comment.startswith("rule_") else ""
+    if not name:
+        return []
+    try:
+        from brieflow_aggregate_efficiency import GROUP_MEMBERSHIP, group_of
+    except ImportError:
+        return [name]
+    group = group_of(name)
+    if group is None:
+        return [name]
+    tail = name[len(group) :]
+    found = []
+    # longest names first, so convert_sbs_with_metadata is not also read as convert_sbs
+    for member in sorted(GROUP_MEMBERSHIP[group], key=len, reverse=True):
+        if f"_{member}" in tail:
+            found.append(member)
+            tail = tail.replace(f"_{member}", "", 1)
+    return found or [group]
+
+
 def _slurm_query_failed_jobs(hours_back: int = 2) -> dict[str, list[FailedJob]]:
     """sacct window query — return {rule: [FailedJob...]} for OOM jobs.
 
@@ -294,23 +320,21 @@ def _slurm_query_failed_jobs(hours_back: int = 2) -> dict[str, list[FailedJob]]:
             continue
         if not comment.startswith("rule_"):
             continue
-        rule_name = comment[len("rule_") :].split("_wildcards")[0]
-        if not rule_name:
-            continue
         max_rss_mb = _parse_rss_to_kb(rss) / 1024.0
         req_mem_mb = _parse_mem_to_mb(req)
-        out.setdefault(rule_name, []).append(
-            FailedJob(
-                rule=rule_name,
-                state="OUT_OF_MEMORY",
-                exit_code="0:125",
-                max_rss_mb=max_rss_mb,
-                req_mem_mb=req_mem_mb,
-                elapsed="",
-                jobid=jid or None,
-                extra={"raw_comment": comment},
+        for rule_name in rules_in_comment(comment):
+            out.setdefault(rule_name, []).append(
+                FailedJob(
+                    rule=rule_name,
+                    state="OUT_OF_MEMORY",
+                    exit_code="0:125",
+                    max_rss_mb=max_rss_mb,
+                    req_mem_mb=req_mem_mb,
+                    elapsed="",
+                    jobid=jid or None,
+                    extra={"raw_comment": comment},
+                )
             )
-        )
     return out
 
 
@@ -412,10 +436,8 @@ def _slurm_count_oom_since(start_ts: float) -> dict[str, int]:
             continue
         if not comment.startswith("rule_"):
             continue
-        rule = comment[len("rule_") :].split("_wildcards")[0]
-        if not rule:
-            continue
-        counts[rule] = counts.get(rule, 0) + 1
+        for rule in rules_in_comment(comment):
+            counts[rule] = counts.get(rule, 0) + 1
     return counts
 
 

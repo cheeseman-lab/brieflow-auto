@@ -53,6 +53,12 @@ PHASE_RULES: dict[str, set[str]] = {
         "convert_phenotype",
         "extract_metadata_sbs",
         "extract_metadata_phenotype",
+        "convert_sbs_with_metadata",
+        "convert_phenotype_with_metadata",
+        "preprocess_sbs",
+        "preprocess_phenotype",
+        "finalize_hcs_preprocess_sbs",
+        "finalize_hcs_preprocess_phenotype",
         "calculate_ic_sbs",
         "calculate_ic_phenotype",
         "combine_metadata_sbs",
@@ -157,7 +163,8 @@ def load_smk_rule_phase(brieflow_dir) -> int:
                 text = smk.read_text()
             except OSError:
                 continue
-            for m in re.finditer(r"^rule\s+([a-zA-Z0-9_]+):", text, re.M):
+            # Rules defined under an `if` block are indented
+            for m in re.finditer(r"^\s*rule\s+([a-zA-Z0-9_]+):", text, re.M):
                 mapping[m.group(1)] = phase
     _SMK_RULE_PHASE.clear()
     _SMK_RULE_PHASE.update(mapping)

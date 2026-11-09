@@ -9,6 +9,9 @@ HARDENING_TODO #23. Resolution priority (high → low):
   3. analysis/slurm/config.yaml set-resources: (legacy hand-curated floor)
   4. snakemake default mem_mb (passthrough)
 
+Preprocess rules that brieflow sizes itself (BRIEFLOW_SIZED_RULES, brieflow >1.5.0) skip
+layers 1-3 unless a manual post-OOM override exists.
+
 A rule is resolved at exactly ONE layer — the first that produces a
 positive mem_mb. Subsequent layers don't override.
 
@@ -207,6 +210,30 @@ def load_slurm_floor(analysis_dir: Path) -> dict[str, int]:
     return out
 
 
+# Rules that brieflow >1.5.0 sizes itself from the tiles they read; only a manual post-OOM bump overrides them.
+BRIEFLOW_SIZED_RULES = frozenset(
+    {
+        "convert_sbs",
+        "convert_phenotype",
+        "convert_sbs_with_metadata",
+        "convert_phenotype_with_metadata",
+        "extract_metadata_sbs",
+        "extract_metadata_phenotype",
+        "calculate_ic_sbs",
+        "calculate_ic_phenotype",
+    }
+)
+
+
+def brieflow_sizes_preprocess(analysis_dir: Path) -> bool:
+    """Whether the screen's brieflow sizes its preprocess memory (its rules call get_ic_mem_mb)."""
+    smk = analysis_dir.parent / "brieflow" / "workflow" / "rules" / "preprocess.smk"
+    try:
+        return "get_ic_mem_mb" in smk.read_text()
+    except OSError:
+        return False
+
+
 # ---------------------------------------------------------------------------
 # Resolver
 # ---------------------------------------------------------------------------
@@ -228,6 +255,7 @@ def resolve(analysis_dir: Path) -> dict[str, dict]:
     floor = load_slurm_floor(analysis_dir)
 
     formula_rules = formulas_data.get("rules") or {}
+    self_sized = BRIEFLOW_SIZED_RULES if brieflow_sizes_preprocess(analysis_dir) else frozenset()
 
     resolved: dict[str, dict] = {}
     rule_universe = set(mem_recs.keys()) | set(formula_rules.keys()) | set(floor.keys())
@@ -245,7 +273,12 @@ def resolve(analysis_dir: Path) -> dict[str, dict]:
                 )
                 else "observation"
             )
-            resolved[rule] = {"mem_mb": int(rec_mem), "source": src}
+            if src == "manual_override" or rule not in self_sized:
+                resolved[rule] = {"mem_mb": int(rec_mem), "source": src}
+                continue
+
+        # brieflow's own sizing beats observations, formulas and the profile floor
+        if rule in self_sized:
             continue
 
         # Layer 2: formula.
