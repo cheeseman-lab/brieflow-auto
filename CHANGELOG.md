@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.5.45 — 2026-11-06
+## 0.5.45 — 2026-11-09
+
+Follows brieflow 1.5.1 (brieflow-analysis `v1.5.1`).
 
 SBS QC reads the called-base mix of a combinatorial `frac` run (`brieflow_base_composition.py`,
 wired into `brieflow_qc.extract_sbs_qc`). On a three-dye code with G blank, a cycle with all
@@ -27,19 +29,14 @@ calls it C, so the plate reads C-rich with no error.
   plate decoding at chance passed it (0.339 single-barcode, 0.001 gene). Ten combinatorial plates
   run 0.107-0.489, the screen behind the 2026-08-28 call 0.164; only the chance-level plate fails.
 
-## 0.5.46 — unreleased (ships with brieflow 1.5.1)
+Interview rows for two more notebook parameters that brieflow 1.5.1 adds:
 
-New preprocess interview row `TRANSPARENT_FIGURES` (lab default `False`, written to
-`all.transparent_figures`). brieflow 1.5.1 saves its QC, cluster and classifier plots on a
-white background unless this is `True`. Version strings stay at 0.5.44 in this change; the
-bump follows 0.5.45.
-
-## 0.5.47 — unreleased (ships with brieflow 1.5.1)
-
-New SBS interview row `USE_ALIGN_WITHIN_CYCLE` (lab default `True`, written to
-`sbs.use_align_within_cycle`). brieflow 1.5.1 can skip the within-cycle registration of the base
-channels; turn it off only when the channels of a cycle are already registered and the step shifts
-them by many pixels. Version strings stay at 0.5.44 in this change; the bump follows 0.5.46.
+- **`TRANSPARENT_FIGURES`** (preprocess; lab default `False`, written to `all.transparent_figures`).
+  brieflow 1.5.1 saves its QC, cluster and classifier plots on a white background unless this is
+  `True`.
+- **`USE_ALIGN_WITHIN_CYCLE`** (SBS; lab default `True`, written to `sbs.use_align_within_cycle`).
+  brieflow 1.5.1 can skip the within-cycle registration of the base channels; turn it off only
+  when the channels of a cycle are already registered and the step shifts them by many pixels.
 
 ## 0.5.44 — 2026-11-03
 
