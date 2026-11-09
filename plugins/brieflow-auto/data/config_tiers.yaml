@@ -76,6 +76,8 @@ tiers:
     sample_fraction:               {source: tuning,          notebook: 0.configure_preprocess_params.ipynb,
                                     canonical: 1.0,
                                     reason: "operator may downsample for fast iteration"}
+    fewer_jobs:                    {source: default,         canonical: true, allow_null: true,
+                                    reason: "brieflow >1.5.0 preprocess run layout; absent in older configs, which keep their jobs"}
 
   sbs:
     # Notebook 2 produces all of these. Operator-asked = library design

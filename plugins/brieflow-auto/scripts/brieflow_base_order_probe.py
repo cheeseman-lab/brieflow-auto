@@ -57,8 +57,6 @@ def probe_base_order(analysis_dir: Path, plate, well: str, tile: int, max_reads:
     from lib.sbs.extract_bases import extract_bases
     from lib.sbs.find_peaks import find_peaks
     from lib.sbs.max_filter import max_filter
-    from lib.shared.file_utils import get_hcs_nested_path, split_well
-    from lib.shared.image_io import read_image
     from lib.shared.log_filter import log_filter
 
     config_path = Path(config_path) if config_path else analysis_dir / "config" / "config.yml"
@@ -70,11 +68,6 @@ def probe_base_order(analysis_dir: Path, plate, well: str, tile: int, max_reads:
     # standardization settings that produced that config)
     library_dirs = (config_path.resolve().parent.parent, analysis_dir)
     root = analysis_dir / cfg["all"]["root_fp"] / "preprocess" / "sbs"
-    row, col = split_well(well)
-    tile_dir = root / f"image_{plate}.zarr" / row / col / str(tile)
-    cycles = sorted(int(p.name) for p in tile_dir.iterdir() if p.name.isdigit())
-    if not cycles:
-        raise FileNotFoundError(f"no cycles under {tile_dir}")
 
     channel_names = list(sbs["channel_names"])
     extra = list(sbs.get("extra_channel_indices") or [])
@@ -83,11 +76,8 @@ def probe_base_order(analysis_dir: Path, plate, well: str, tile: int, max_reads:
     method = sbs.get("call_reads_method", "median")
     combinatorial = sbs.get("combinatorial") if chemistry == "combinatorial" else None
 
-    imgs = [
-        np.asarray(read_image(str(root / get_hcs_nested_path(
-            {"plate": plate, "row": row, "col": col, "tile": tile, "cycle": cy}, "image"))))
-        for cy in cycles
-    ]
+    cycles, imgs = read_preprocess_sbs_cycles(root, plate, well, tile)
+    imgs = [np.asarray(img) for img in imgs]
     aligned = align_cycles(
         imgs, channel_order=channel_names, method=sbs.get("alignment_method"),
         upsample_factor=sbs.get("upsample_factor", 2), window=sbs.get("window", 2),
@@ -145,6 +135,48 @@ def probe_base_order(analysis_dir: Path, plate, well: str, tile: int, max_reads:
     report = _check_cycle_window(report, region, chance)
     return _check_region_length(report, prefixes, region, results and df_bases, bases, call_reads,
                                 peaks, method, chemistry, combinatorial)
+
+
+def read_preprocess_sbs_cycles(root: Path, plate, well: str, tile) -> tuple[list, list]:
+    """Return one tile's SBS cycle values and preprocessed images, in cycle order, from either zarr layout.
+
+    Screens on brieflow 1.5.0 or earlier store one image per cycle under
+    ``<tile>/<cycle>``; later screens store one image per tile with the cycles on C,
+    read one cycle at a time through ``read_image(..., cycle=)``.
+    """
+    from lib.shared.file_utils import get_hcs_nested_path, split_well
+    from lib.shared.image_io import read_image
+
+    row, col = split_well(well)
+    tile_dir = Path(root) / f"image_{plate}.zarr" / row / col / str(tile)
+    nested = (
+        sorted(int(p.name) for p in tile_dir.iterdir() if p.name.isdigit())
+        if tile_dir.is_dir()
+        else []
+    )
+    if nested:
+        return nested, [
+            read_image(
+                str(
+                    Path(root)
+                    / get_hcs_nested_path(
+                        {"plate": plate, "row": row, "col": col, "tile": tile, "cycle": cy}, "image"
+                    )
+                )
+            )
+            for cy in nested
+        ]
+    if not (tile_dir / "zarr.json").exists():
+        raise FileNotFoundError(f"no preprocessed SBS image under {tile_dir}")
+    import zarr
+
+    cycles = (zarr.open_group(str(tile_dir), mode="r").attrs.get("brieflow") or {}).get(
+        "cycles"
+    ) or []
+    if not cycles:
+        raise FileNotFoundError(f"no cycles recorded in {tile_dir}/zarr.json")
+    images = [read_image(str(tile_dir), cycle=cy) for cy in cycles]
+    return [int(cy) if str(cy).isdigit() else cy for cy in cycles], images
 
 
 def _check_cycle_window(report, region, chance) -> dict:

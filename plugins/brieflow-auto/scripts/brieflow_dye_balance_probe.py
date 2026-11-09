@@ -50,6 +50,7 @@ from brieflow_base_order_probe import (
     _brightest_threshold,
     _ensure_lib_importable,
     _library_prefixes,
+    read_preprocess_sbs_cycles,
 )
 
 SCHEMA = "dye-balance-probe/v1"
@@ -78,8 +79,6 @@ def probe_dye_balance(
     from lib.sbs.extract_bases import extract_bases
     from lib.sbs.find_peaks import find_peaks
     from lib.sbs.max_filter import max_filter
-    from lib.shared.file_utils import get_hcs_nested_path, split_well
-    from lib.shared.image_io import read_image
     from lib.shared.log_filter import log_filter
 
     config_path = Path(config_path) if config_path else analysis_dir / "config" / "config.yml"
@@ -123,25 +122,8 @@ def probe_dye_balance(
     extra = list(sbs.get("extra_channel_indices") or [])
     bases = list(sbs.get("bases") or [c for i, c in enumerate(channel_names) if i not in extra])
     root = analysis_dir / cfg["all"]["root_fp"] / "preprocess" / "sbs"
-    row, col = split_well(well)
-    tile_dir = root / f"image_{plate}.zarr" / row / col / str(tile)
-    cycles = sorted(int(p.name) for p in tile_dir.iterdir() if p.name.isdigit())
-    if not cycles:
-        raise FileNotFoundError(f"no cycles under {tile_dir}")
-
-    imgs = [
-        np.asarray(
-            read_image(
-                str(
-                    root
-                    / get_hcs_nested_path(
-                        {"plate": plate, "row": row, "col": col, "tile": tile, "cycle": cy}, "image"
-                    )
-                )
-            )
-        )
-        for cy in cycles
-    ]
+    cycles, imgs = read_preprocess_sbs_cycles(root, plate, well, tile)
+    imgs = [np.asarray(img) for img in imgs]
     aligned = align_cycles(
         imgs,
         channel_order=channel_names,

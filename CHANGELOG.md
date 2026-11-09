@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+Follows the brieflow preprocess run-structure change (brieflow #346, brieflow-analysis #136).
+- The resource resolver no longer overrides the memory brieflow now sizes itself for convert,
+  metadata and IC jobs. A manual post-OOM bump still applies.
+- The dry-run preview knows the new `convert_*_with_metadata` rules, the `preprocess_*` groups
+  and rules defined under an `if` block.
+- Efficiency aggregation and OOM accounting read grouped Slurm jobs, whose names list the group
+  and its rules, as their member rules.
+- The base-order and dye-balance probes read preprocessed SBS cycles from either zarr layout:
+  per-cycle images (brieflow 1.5.0 and earlier) or one image per tile with cycles on C
+  (brieflow #344).
+- `preprocess.fewer_jobs` is registered as a default config key.
+
 ## 0.5.44 — 2026-11-03
 
 Follows brieflow 1.5.0, where `zarr3` became brieflow `main` and the marimo template became
