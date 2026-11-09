@@ -56,6 +56,18 @@
     },
     {
       "notebook": "preprocess",
+      "param_name": "TRANSPARENT_FIGURES",
+      "bucket": "override",
+      "default": "\u2014",
+      "derivation_source": "lab-default: False",
+      "written_to_config": "all.transparent_figures",
+      "notes": "\"True = transparent plot backgrounds\"  ||  Save the pipeline's QC, cluster and classifier plots with a transparent background (e.g. for Illustrator) instead of white. A presentation preference, not data-derivable; written to all.transparent_figures.",
+      "value": null,
+      "value_source": null,
+      "set_at": null
+    },
+    {
+      "notebook": "preprocess",
       "param_name": "SBS_SAMPLES_DF_FP",
       "bucket": "override",
       "default": "\u2014",

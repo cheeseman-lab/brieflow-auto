@@ -27,7 +27,7 @@ sweep_joint:                      # params swept TOGETHER (outer -> inner, DAG o
 notebook_defaults:                # lab-standard values patched into the exact notebook var
   # The lab-default-sourced rows of data/interview_template.json.
   # Operator + screen.yaml values override these.
-  preprocess: {CONFIG_FILE_PATH: config/config.yml, ROOT_FP: brieflow_output/, IMAGE_FORMAT: zarr, ZARR_MAX_LEVELS: 1, SBS_SAMPLES_DF_FP: config/sbs_samples.tsv, PHENOTYPE_SAMPLES_DF_FP: config/phenotype_samples.tsv, SBS_COMBO_DF_FP: config/sbs_combo.tsv,
+  preprocess: {CONFIG_FILE_PATH: config/config.yml, ROOT_FP: brieflow_output/, IMAGE_FORMAT: zarr, ZARR_MAX_LEVELS: 1, TRANSPARENT_FIGURES: false, SBS_SAMPLES_DF_FP: config/sbs_samples.tsv, PHENOTYPE_SAMPLES_DF_FP: config/phenotype_samples.tsv, SBS_COMBO_DF_FP: config/sbs_combo.tsv,
     PHENOTYPE_COMBO_DF_FP: config/phenotype_combo.tsv, SBS_METADATA_SAMPLES_DF_FP: config/sbs_metadata_samples.tsv, PHENOTYPE_METADATA_SAMPLES_DF_FP: config/phenotype_metadata_samples.tsv, SAMPLE_FRACTION: 0.1}
   sbs:
     CONFIG_FILE_PATH: config/config.yml

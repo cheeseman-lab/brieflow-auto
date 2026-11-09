@@ -27,6 +27,13 @@ calls it C, so the plate reads C-rich with no error.
   plate decoding at chance passed it (0.339 single-barcode, 0.001 gene). Ten combinatorial plates
   run 0.107-0.489, the screen behind the 2026-08-28 call 0.164; only the chance-level plate fails.
 
+## 0.5.46 — unreleased (ships with brieflow 1.5.1)
+
+New preprocess interview row `TRANSPARENT_FIGURES` (lab default `False`, written to
+`all.transparent_figures`). brieflow 1.5.1 saves its QC, cluster and classifier plots on a
+white background unless this is `True`. Version strings stay at 0.5.44 in this change; the
+bump follows 0.5.45.
+
 ## 0.5.44 — 2026-11-03
 
 Follows brieflow 1.5.0, where `zarr3` became brieflow `main` and the marimo template became
