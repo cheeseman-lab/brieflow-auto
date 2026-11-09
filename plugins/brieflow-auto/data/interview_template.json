@@ -701,6 +701,18 @@
     },
     {
       "notebook": "sbs",
+      "param_name": "USE_ALIGN_WITHIN_CYCLE",
+      "bucket": "override",
+      "default": "\u2014",
+      "derivation_source": "lab-default: True",
+      "written_to_config": "sbs.use_align_within_cycle",
+      "notes": "\"False = skip within-cycle channel registration\"  ||  Registers the base channels of each cycle to each other before cycles are aligned. Lab default True; set False when the channels are already registered and the step shifts them by many pixels (black bands in the aligned base channels), e.g. haze on one channel with few spots. Written to sbs.use_align_within_cycle.",
+      "value": null,
+      "value_source": null,
+      "set_at": null
+    },
+    {
+      "notebook": "sbs",
       "param_name": "SKIP_CYCLES",
       "bucket": "user",
       "derivation": {

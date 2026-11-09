@@ -136,6 +136,7 @@ tiers:
     reconcile:                     {source: default,         canonical: contained_in_cells}
     sort_calls:                    {source: default,         canonical: count}
     upsample_factor:               {source: default,         canonical: 2}
+    use_align_within_cycle:        {source: default,         canonical: true}
     window:                        {source: default,         canonical: 2}
 
   phenotype:

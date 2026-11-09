@@ -34,6 +34,13 @@ New preprocess interview row `TRANSPARENT_FIGURES` (lab default `False`, written
 white background unless this is `True`. Version strings stay at 0.5.44 in this change; the
 bump follows 0.5.45.
 
+## 0.5.47 — unreleased (ships with brieflow 1.5.1)
+
+New SBS interview row `USE_ALIGN_WITHIN_CYCLE` (lab default `True`, written to
+`sbs.use_align_within_cycle`). brieflow 1.5.1 can skip the within-cycle registration of the base
+channels; turn it off only when the channels of a cycle are already registered and the step shifts
+them by many pixels. Version strings stay at 0.5.44 in this change; the bump follows 0.5.46.
+
 ## 0.5.44 — 2026-11-03
 
 Follows brieflow 1.5.0, where `zarr3` became brieflow `main` and the marimo template became
