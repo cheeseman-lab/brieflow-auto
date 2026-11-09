@@ -1,7 +1,7 @@
 {
   "_schema_version": 1,
-  "_csv_sha": "506cdc2cab19",
-  "_n_params": 325,
+  "_csv_sha": "f15773d69edd",
+  "_n_params": 326,
   "_generated_from": "2026-06-07-interview-spec.csv",
   "_screen_id": null,
   "_created_at": null,
@@ -683,6 +683,18 @@
       "derivation_source": "lab-default: 2",
       "written_to_config": "\u2014",
       "notes": "library default  ||  Marked '# library default'; alignment knob, lab-default per brief.",
+      "value": null,
+      "value_source": null,
+      "set_at": null
+    },
+    {
+      "notebook": "sbs",
+      "param_name": "USE_ALIGN_WITHIN_CYCLE",
+      "bucket": "override",
+      "default": "\u2014",
+      "derivation_source": "lab-default: True",
+      "written_to_config": "sbs.use_align_within_cycle",
+      "notes": "\"False = skip within-cycle channel registration\"  ||  Registers the base channels of each cycle to each other before cycles are aligned. Lab default True; set False when the channels are already registered and the step shifts them by many pixels (black bands in the aligned base channels), e.g. haze on one channel with few spots. Written to sbs.use_align_within_cycle.",
       "value": null,
       "value_source": null,
       "set_at": null

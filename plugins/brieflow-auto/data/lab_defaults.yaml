@@ -35,6 +35,7 @@ notebook_defaults:                # lab-standard values patched into the exact n
     ALIGNMENT_METHOD: null
     UPSAMPLE_FACTOR: 2
     WINDOW: 2
+    USE_ALIGN_WITHIN_CYCLE: true
     SKIP_CYCLES: null
     MANUAL_BACKGROUND_CYCLE: null
     MANUAL_CHANNEL_MAPPING: null
