@@ -43,12 +43,13 @@ never claim that a journal alone is a saved rollout.
 - Raw data staged in the layout brieflow reads (`scripts/brieflow_validate_tree.py
   --layout`). The runner checks the inputs screen.yaml names on every launch (after the
   pull, when a lifecycle hook pulls them) and stops with exit 9 otherwise.
-- **Segmentation-model deps installed if non-default.** The runner does NOT install
-  the model-specific deps. If the interview lands on `CELLPOSE_MODEL=cpsam` (e.g.
-  RPE1) or `SEGMENTATION_METHOD=stardist`, install them into the screen env before
-  launching (brieflow-notebook Step 3b: `uv pip install cellpose==4.0.4 torch==2.7.0
-  torchvision==0.22.0` for cpsam). Default cyto3 needs nothing.
-  - **Which env path depends on `detection_target` (DNA vs RNA):**
+- **Segmentation-model deps.** On brieflow 1.5.1 and later the base env has Cellpose 3,
+  Cellpose 4 and StarDist, and `CELLPOSE_MODEL` picks the Cellpose version per phase, so
+  `cpsam`, `cyto3`/`nuclei` and `stardist` all run in one env with no extra install. The
+  rest of this item applies only to a screen pinned to brieflow 1.5.0 or earlier, where
+  `cpsam` needs `uv pip install cellpose==4.0.4` (brieflow-notebook Step 3b) and that
+  install replaces Cellpose 3.1.0.
+  - **Which env path depends on `detection_target` (DNA vs RNA)** (brieflow 1.5.0 and earlier):
     - **DNA screens** (nuclear barcode spots → SBS segments nuclei only,
       `SEGMENT_CELLS=False`): SBS uses cyto3/nuclei, which exist ONLY on cellpose
       3.1.0 (cpsam is 4.x-only). So when phenotype wants cpsam, run **cpsam for

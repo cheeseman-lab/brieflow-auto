@@ -38,6 +38,11 @@ Interview rows for two more notebook parameters that brieflow 1.5.1 adds:
   brieflow 1.5.1 can skip the within-cycle registration of the base channels; turn it off only
   when the channels of a cycle are already registered and the step shifts them by many pixels.
 
+No manual segmentation-model install on brieflow 1.5.1: it installs Cellpose 3 and 4 and StarDist
+together, and `CELLPOSE_MODEL` picks the Cellpose version. The `uv pip install cellpose==4.0.4` and
+StarDist steps in brieflow-notebook, brieflow-run, brieflow-setup and the cloud flow now apply only to
+screens pinned to brieflow 1.5.0 or earlier.
+
 ## 0.5.44 — 2026-11-03
 
 Follows brieflow 1.5.0, where `zarr3` became brieflow `main` and the marimo template became

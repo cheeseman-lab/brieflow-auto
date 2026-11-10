@@ -356,26 +356,16 @@ defect (marker gap, cross-cell collision, missing markers). Log a
 fix lives at `<screen-root>/<canonical-notebook-dir>/<phase>.py`, not in
 this analysis notebook.
 
-### Step 3b — Segmentation-model deps (phenotype only, gated)
+### Step 3b — Segmentation-model deps (nothing to install on brieflow 1.5.1+)
 
-The base env (setup S6) deliberately omits the heavy, model-specific
-segmentation deps. Install them **only when the interview lands on that model**,
-**once**, into the screen's conda env, before starting the kernel:
+brieflow 1.5.1 and later install Cellpose 3 (`cellpose3`), Cellpose 4 and StarDist with
+TensorFlow in the base env (setup S6), and `CELLPOSE_MODEL` picks the Cellpose version. Install
+nothing for `cpsam`, `cyto3` or `stardist`; a manual `uv pip install cellpose==...` would replace
+the pinned Cellpose 4 and break the routing.
 
-```python
-seg = find_param(interview, "SEGMENTATION_METHOD", notebook=phase)
-model = find_param(interview, "CELLPOSE_MODEL", notebook=phase)
-# cpsam (cellpose-SAM) — e.g. the RPE1 screen's irregular cells
-if model and str(model.get("value")).lower() == "cpsam":
-    run: uv pip install cellpose==4.0.4 torch==2.7.0 torchvision==0.22.0
-# stardist path (same pattern)
-elif seg and str(seg.get("value")).lower() == "stardist":
-    run: uv pip install "numpy<2.0" stardist==0.9.1 csbdeep==0.8.1
-```
-
-Run the `uv pip install` in the screen's conda env (idempotent — a no-op if
-already satisfied). Default cyto3 needs nothing extra (brieflow base deps cover
-it). Skip this step for non-phenotype phases.
+Only a screen pinned to brieflow 1.5.0 or earlier still needs the old manual install for
+`cpsam` (`uv pip install cellpose==4.0.4`, which replaces Cellpose 3.1.0; see brieflow-run
+"Segmentation-model deps") or `stardist` (`uv pip install tensorflow-cpu==2.20.0`).
 
 ## Step 4 — Start the kernel
 

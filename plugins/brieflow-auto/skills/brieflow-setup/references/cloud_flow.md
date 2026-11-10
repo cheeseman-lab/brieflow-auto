@@ -89,10 +89,9 @@ S6  Repo setup                         git clone <repo URL> \
                                        cd brieflow
                                        uv pip install -r pyproject.toml
                                        uv pip install -e .
-                                       (cpsam / stardist deps are NOT installed
-                                       here — they go in at the phenotype step
-                                       when the interview picks that model; see
-                                       brieflow-notebook Step 3b.)
+                                       (brieflow 1.5.1+ installs Cellpose 3 and 4
+                                       and StarDist here; see brieflow-notebook
+                                       Step 3b for older screens.)
 S7  Stage screen.yaml                  Stage the operator's screen.yaml
                                        (brieflow_screen_yaml.py find / stage);
                                        stop on check if none is filled in.
@@ -506,17 +505,11 @@ uv pip install -r pyproject.toml
 uv pip install -e .
 ```
 
-Segmentation-model deps are **not** installed at env-build time. They go in at
-the phenotype step, gated on the interview's `CELLPOSE_MODEL` / `SEGMENTATION_METHOD`
-(brieflow-notebook Step 3b), so the base env stays lean and screens that don't use
-them never pull the heavy torch pin:
-
-```bash
-# cpsam (cellpose-SAM — e.g. RPE1's irregular cells):
-uv pip install cellpose==4.0.4 torch==2.7.0 torchvision==0.22.0
-# stardist:
-uv pip install "numpy<2.0" stardist==0.9.1 csbdeep==0.8.1
-```
+From brieflow 1.5.1 the env above already holds every segmentation model: Cellpose 3
+(`cellpose3`, built from GitHub, so the VM needs `git` and network access), Cellpose 4 for
+`cpsam`, and StarDist with a CPU TensorFlow. `CELLPOSE_MODEL` picks the Cellpose version;
+install nothing extra. A screen pinned to brieflow 1.5.0 or earlier follows brieflow-notebook
+Step 3b.
 
 ---
 

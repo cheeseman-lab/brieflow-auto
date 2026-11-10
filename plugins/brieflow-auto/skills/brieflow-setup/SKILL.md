@@ -218,13 +218,11 @@ S6  Repo setup                         git clone <repo URL> \
                                        cd brieflow
                                        uv pip install -r pyproject.toml
                                        uv pip install -e .
-                                       Do NOT install cpsam / stardist deps here —
-                                       they are segmentation-model-specific and
-                                       installed at the phenotype step ONLY when
-                                       the interview lands on that model (see
-                                       brieflow-notebook). Keeps the base env lean
-                                       and avoids a heavy torch pin every screen
-                                       doesn't need.
+                                       brieflow 1.5.1+ installs Cellpose 3 and 4
+                                       and StarDist here (needs git and network
+                                       for cellpose3); install nothing else for
+                                       cpsam / stardist (brieflow-notebook
+                                       Step 3b covers older screens).
 S7  Stage screen.yaml                  The operator writes screen.yaml; setup
                                        stages it and never authors it:
                                          brieflow_screen_yaml.py find
