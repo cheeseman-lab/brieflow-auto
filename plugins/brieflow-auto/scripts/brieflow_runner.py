@@ -1739,6 +1739,14 @@ def run_screen(args) -> int:
 
     # --- Step 1: resolve all phases (up-front interview check) ---
     res = resolve_all_phases(analysis_dir)
+    seg = res.get("segmentation_overrides") or {}
+    if seg.get("error") or seg.get("unmatched"):
+        notify(
+            analysis_dir,
+            tag,
+            f"segmentation_overrides {seg.get('file')}: "
+            + (seg.get("error") or f"keys with no interview row, not applied: {', '.join(seg['unmatched'])}"),
+        )
     if res["gaps"]:
         gap_names = [g["param_name"] for g in res["gaps"]]
         msg = (

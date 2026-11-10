@@ -155,6 +155,16 @@ never claim that a journal alone is a saved rollout.
    and `📝 From your notes` sections first, point the operator at the HTML summary,
    apply any confirmed note-derived overrides (`set_value`, source `operator`)
    before launching.
+
+   **Tuned segmentation from goudacell.** When `phenotype.segmentation_overrides` in
+   `screen.yaml` names the block of `config.yml` keys goudacell exported (relative to
+   `screen.yaml`), `resolve_all_phases` applies each key to the phenotype row whose variable
+   writes it (`apply_segmentation_overrides`; channel indexes become channel names, and a
+   `second_objs` block becomes `SECOND_OBJS`). Those rows carry `value_source` `screen-yaml`
+   and a `reason` naming the file; operator, probed and tuned answers are kept. The result's
+   `segmentation_overrides` report lists `unmatched` keys (no interview row, such as
+   `nuclei_diameter`, which the notebook estimates) and an `error` when the file cannot be
+   read: show them to the operator, never map them by guess.
 3. **Slack paging gate (operator double-check, before launching the unattended
    loop).** Paging is the only channel to reach the operator on a blocker — never
    start a headless run silently unpageable.

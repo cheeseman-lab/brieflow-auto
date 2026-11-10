@@ -147,6 +147,7 @@ from brieflow_interview import (  # noqa: E402
     expected_operator_params as expected_operator_params,
     load_notebook_defaults as load_notebook_defaults,
     resolve_all_phases as resolve_all_phases,
+    apply_segmentation_overrides as apply_segmentation_overrides,
     scan_additional_notes as scan_additional_notes,
     verify_notes_against_data as verify_notes_against_data,
     interview_review as interview_review,

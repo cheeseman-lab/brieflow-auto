@@ -192,6 +192,8 @@ tiers:
                                     accepted: [otsu_two_peak, otsu_three_peak_mid_bg, otsu_three_peak_mid_fg, min_cross_entropy]}
     declump_method:                {source: default,         canonical: shape,
                                     accepted: [none, shape, intensity, shape_intensity]}
+    second_objs:                   {source: operator,        canonical: null, allow_null: true,
+                                    reason: "named secondary objects, each spec overriding the keys above"}
     custom_features:               {source: operator,        reason: "extra per-cell feature definitions"}
     mode:                          {source: default,         canonical: null, allow_null: true}
     reconcile:                     {source: default,         canonical: contained_in_cells}

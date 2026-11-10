@@ -230,6 +230,91 @@ def apply_screen_yaml_derivations(
     return applied, missing
 
 
+# Phenotype config keys whose notebook variable is not the key in upper case; the
+# channel-index keys are written back as channel names.
+_OVERRIDE_PARAMS = {
+    "gpu": "PIPELINE_GPU",
+    "cyto_index": "CYTO_CHANNEL",
+    "second_obj_channel_index": "SECOND_OBJ_CHANNEL",
+    "second_obj_diameter": "SECOND_OBJ_DIAMETER_INPUT",
+}
+_OVERRIDE_CHANNEL_KEYS = frozenset({"cyto_index", "second_obj_channel_index"})
+_OVERRIDE_REASON = "segmentation_overrides"
+
+
+def apply_segmentation_overrides(
+    interview: dict, screen: dict, screen_yaml_path: str | Path | None
+) -> dict:
+    """Fill phenotype rows from the config block screen.yaml's
+    ``phenotype.segmentation_overrides`` names.
+
+    goudacell exports tuned segmentation settings as ``config.yml`` phenotype keys (optionally
+    under a ``phenotype:`` key). Each key fills the phenotype row of the notebook variable that
+    writes it, with ``value_source`` ``screen-yaml`` and ``reason`` naming the file. Rows the
+    operator, a probe, a tuning pass or screen.yaml itself already answered are kept. Keys that
+    match no row, and channel indexes that name no channel, are returned, never guessed.
+
+    Returns ``{"file", "applied", "kept", "unmatched", "error"}``.
+    """
+    report: dict[str, Any] = {
+        "file": None, "applied": [], "kept": [], "unmatched": [], "error": None,
+    }
+    ref = _lookup_dotted(screen, "phenotype.segmentation_overrides")
+    if not ref:
+        return report
+    fp = Path(str(ref)).expanduser()
+    if not fp.is_absolute() and screen_yaml_path:
+        fp = Path(screen_yaml_path).parent / fp
+    report["file"] = str(fp)
+    try:
+        import yaml as _yaml
+
+        block = _yaml.safe_load(fp.read_text()) or {}
+    except (OSError, ValueError) as e:
+        report["error"] = f"cannot read {fp}: {e}"
+        return report
+    if isinstance(block, dict) and isinstance(block.get("phenotype"), dict):
+        block = block["phenotype"]
+    if not isinstance(block, dict):
+        report["error"] = f"{fp} is not a mapping of config keys"
+        return report
+
+    channels = (find_param(interview, "CHANNEL_NAMES", notebook="phenotype") or {}).get("value")
+    channels = channels if isinstance(channels, list) else []
+
+    def channel_name(index):
+        return channels[index] if isinstance(index, int) and 0 <= index < len(channels) else None
+
+    reason = f"{_OVERRIDE_REASON}: {ref}"
+    for key, value in block.items():
+        row = find_param(interview, _OVERRIDE_PARAMS.get(key, str(key).upper()), notebook="phenotype")
+        if key in _OVERRIDE_CHANNEL_KEYS and value is not None:
+            value = channel_name(value)
+        elif key == "second_objs" and isinstance(value, dict):
+            specs = {}
+            for name, spec in value.items():
+                spec = dict(spec or {})
+                index = spec.pop("second_obj_channel_index", None)
+                if index is not None:
+                    spec = {"channel": channel_name(index), **spec}
+                specs[name] = spec
+            value = None if any(s.get("channel", "") is None for s in specs.values()) else specs
+        if row is None or (value is None and block[key] is not None):
+            report["unmatched"].append(key)
+            continue
+        ours = str(row.get("reason") or "").startswith(_OVERRIDE_REASON)
+        settled = row.get("value_source") not in (None, "default", "lab-default") and not (
+            row.get("value_source") == "screen-yaml" and row.get("value") is None
+        )
+        if settled and not ours:
+            report["kept"].append(row["param_name"])
+            continue
+        set_value(interview, row["param_name"], value, "screen-yaml", notebook="phenotype")
+        row["reason"] = reason
+        report["applied"].append(row["param_name"])
+    return report
+
+
 def _file_sha(path: str | Path) -> str | None:
     try:
         return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -1392,9 +1477,9 @@ def resolve_all_phases(
     template_path: str | Path | None = None,
     lab_defaults_path: str | Path | None = None,
 ) -> dict:
-    """Up-front interview: bootstrap screen.yaml derivations, fill lab-standard
-    defaults, then collect the active, still-null operator rows across all phases
-    (the gaps to ask once).
+    """Up-front interview: bootstrap screen.yaml derivations, apply the
+    segmentation_overrides block, fill lab-standard defaults, then collect the
+    active, still-null operator rows across all phases (the gaps to ask once).
 
     Precedence for a row's value: operator / screen.yaml (already set) >
     lab_defaults.notebook_defaults > notebook baked-in default. Lab-default fills
@@ -1406,6 +1491,8 @@ def resolve_all_phases(
         {
             "filled": [param_name, ...],   # active rows with a value/value_source
             "gaps":   [{"param_name": str, "notebook": str, "notes": str}, ...],
+            "segmentation_overrides": {...},  # apply_segmentation_overrides report
+            "note_overrides": [...],
         }
     """
     analysis_dir = Path(analysis_dir)
@@ -1445,6 +1532,10 @@ def resolve_all_phases(
     after = json.dumps(find_param(iv, "MERGE_APPROACH", notebook="merge"), sort_keys=True)
     changed = before != after or refreshed
 
+    before = json.dumps(iv["params"], sort_keys=True)
+    overrides = apply_segmentation_overrides(iv, screen, screen_yaml_path)
+    changed = before != json.dumps(iv["params"], sort_keys=True) or changed
+
     changed = fill_lab_defaults(iv, load_notebook_defaults(lab_defaults_path)) or changed
     changed = _separate_design_and_library(iv) or changed
 
@@ -1470,7 +1561,7 @@ def resolve_all_phases(
             )
     if changed:
         save_interview(iv, iv_path)
-    out = {"filled": filled, "gaps": gaps}
+    out = {"filled": filled, "gaps": gaps, "segmentation_overrides": overrides}
     # Surface candidate lab-default overrides implied by the operator's prose
     # additional_notes (the agent/operator confirms; nothing is auto-applied).
     out["note_overrides"] = scan_additional_notes(screen, iv)
