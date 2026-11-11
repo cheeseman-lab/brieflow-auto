@@ -12,7 +12,7 @@ Follows brieflow 1.5.2: named secondary objects (`phenotype.second_objs`).
   `second_objs` spec, merged over the flat phenotype keys, meets the same accepted-value guards
   (a per-object `threshold_method` typo is HIGH), names follow brieflow's rule, and each object's
   channel index is a real channel; `second_obj_mode` is `segment` or `count`, and a derived
-  object's `from:` (`overlap` / `parent_minus`) names objects defined before it.
+  object's `from:` (`overlap` / `touching` / `parent_minus`) names objects defined before it.
 - **goudacell handoff**: `phenotype.segmentation_overrides` in `screen.yaml` names the block of
   `config.yml` keys goudacell exports (tuned segmentation settings, a fine-tuned model path).
   `resolve_all_phases` applies each key to the phenotype row whose notebook variable writes it

@@ -137,6 +137,7 @@ def test_preflight_checks_count_mode_and_derived_objects():
         "dna": {"second_obj_channel_index": 0},
         "both": {"from": {"overlap": ["foci", "dna"]}},
         "rest": {"from": {"parent_minus": ["foci", "dna"]}},
+        "near": {"from": {"touching": ["foci", "dna"]}},
     }}}
     assert pf.validate_second_objs(good, _guards()) == []
 
@@ -144,9 +145,10 @@ def test_preflight_checks_count_mode_and_derived_objects():
         "early": {"from": {"overlap": ["late"]}},
         "late": {"second_obj_mode": "tally"},
         "odd": {"from": {"union": ["late"]}},
+        "alone": {"from": {"touching": ["late"]}},
     }}}
     codes = sorted(i.code for i in pf.validate_second_objs(bad, _guards()))
-    assert codes == ["SECOND_OBJ_FROM_INVALID", "SECOND_OBJ_FROM_INVALID", "SECOND_OBJ_MODE_INVALID"]
+    assert codes == ["SECOND_OBJ_FROM_INVALID"] * 3 + ["SECOND_OBJ_MODE_INVALID"]
 
 
 def _canonical_phenotype() -> Path | None:
