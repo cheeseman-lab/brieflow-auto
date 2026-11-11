@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.5.46 — unreleased
+
+Follows brieflow 1.5.2: named secondary objects (`phenotype.second_objs`).
+
+- **Interview row** for the phenotype notebook's `SECOND_OBJS` (`{name: {"channel": ..., <config
+  key>: value}}`, gated on `SECOND_OBJ_DETECTION`), prefilled from the optional
+  `phenotype.second_objs` in `screen.yaml`; null keeps one object. Spec-CSV row and
+  `config_tiers.yaml` entry with it.
+- **Per-object preflight** (`validate_second_objs` in `brieflow_preflight.py`): each
+  `second_objs` spec, merged over the flat phenotype keys, meets the same accepted-value guards
+  (a per-object `threshold_method` typo is HIGH), names follow brieflow's rule, and each object's
+  channel index is a real channel; `second_obj_mode` is `segment` or `count`, and a derived
+  object's `from:` (`overlap` / `parent_minus`) names objects defined before it.
+- **goudacell handoff**: `phenotype.segmentation_overrides` in `screen.yaml` names the block of
+  `config.yml` keys goudacell exports (tuned segmentation settings, a fine-tuned model path).
+  `resolve_all_phases` applies each key to the phenotype row whose notebook variable writes it
+  (`apply_segmentation_overrides`), with `value_source` `screen-yaml` and a `reason` naming the
+  file; operator, probed and tuned answers are kept, and keys with no row are reported in the
+  result and by the runner, not applied.
+
 ## 0.5.45 — 2026-11-09
 
 Follows brieflow 1.5.1 (brieflow-analysis `v1.5.1`).

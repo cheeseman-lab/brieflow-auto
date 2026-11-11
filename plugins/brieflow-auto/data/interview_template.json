@@ -1,7 +1,7 @@
 {
   "_schema_version": 1,
-  "_csv_sha": "0b22d5bcbb12",
-  "_n_params": 330,
+  "_csv_sha": "7fe988ca89f8",
+  "_n_params": 331,
   "_generated_from": "2026-06-07-interview-spec.csv",
   "_screen_id": null,
   "_created_at": null,
@@ -3805,6 +3805,27 @@
       "gating": {
         "param": "SECOND_OBJ_METHOD",
         "equals": "threshold"
+      }
+    },
+    {
+      "notebook": "phenotype",
+      "param_name": "SECOND_OBJS",
+      "bucket": "user",
+      "default": "{}",
+      "derivation_source": "screen-yaml: phenotype.second_objs",
+      "written_to_config": "phenotype.second_objs",
+      "notes": "e.g., {\"granule\": {\"channel\": \"G3BP1\", \"threshold_method\": \"otsu_three_peak_mid_bg\"}}  ||  Markdown: named secondary objects, each a channel plus overrides of the lowercase secondary-object config keys; empty = one object from the flat settings. Optional in screen.yaml (null = one object); the agent never invents objects. A segmentation_overrides block exported by goudacell can also carry second_objs.",
+      "value": null,
+      "value_source": null,
+      "set_at": null,
+      "derivation": {
+        "type": "screen_yaml",
+        "path": "phenotype.second_objs",
+        "null_ok": true
+      },
+      "gating": {
+        "param": "SECOND_OBJ_DETECTION",
+        "equals": true
       }
     },
     {

@@ -86,7 +86,7 @@ def analysis_dir(tmp_path):
 
 def test_returns_filled_and_gaps_keys(bw, analysis_dir):
     result = bw.resolve_all_phases(analysis_dir)
-    assert set(result.keys()) == {"filled", "gaps", "note_overrides"}
+    assert set(result.keys()) == {"filled", "gaps", "note_overrides", "segmentation_overrides"}
     assert isinstance(result["filled"], list)
     assert isinstance(result["gaps"], list)
     assert isinstance(result["note_overrides"], list)  # candidate overrides from additional_notes

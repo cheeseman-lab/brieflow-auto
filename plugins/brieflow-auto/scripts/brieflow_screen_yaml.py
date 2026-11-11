@@ -61,6 +61,8 @@ READ_KEYS = (
     "phenotype.background_channel_cell",
     "phenotype.foci_channel",
     "phenotype.second_obj_channel",
+    "phenotype.second_objs",
+    "phenotype.segmentation_overrides",
     "pipeline.conda_env",
     "data.input_sbs_dir",
     "data.input_phenotype_dir",

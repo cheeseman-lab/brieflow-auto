@@ -433,6 +433,80 @@ def find_config_value(config: dict, key: str) -> tuple[bool, object]:
     return False, None
 
 
+SECOND_OBJ_NAME_RE = re.compile(r"[a-z][a-z0-9]*(_[a-z0-9]+)*")
+_COMPARTMENTS = ("cell", "nucleus", "cytoplasm")
+
+
+def validate_second_objs(config: dict, surface: BrieflowSurface) -> list[Issue]:
+    """Check ``phenotype.second_objs``: names brieflow accepts, each spec merged over the flat
+    phenotype keys meeting the accepted-value guards, and a channel index in range."""
+    phenotype = config.get("phenotype") or {}
+    specs = phenotype.get("second_objs")
+    if not specs:
+        return []
+    if not isinstance(specs, dict):
+        return [Issue(severity="HIGH", code="SECOND_OBJS_NOT_A_MAPPING",
+                      message="`phenotype.second_objs` must map object names to specs",
+                      suggestion="Write it as {name: {second_obj_channel_index: ..., ...}}")]
+    issues: list[Issue] = []
+    shared = {k: v for k, v in phenotype.items() if k != "second_objs"}
+    n_channels = len(phenotype.get("channel_names") or [])
+    for name, spec in specs.items():
+        name = str(name)
+        if (
+            not SECOND_OBJ_NAME_RE.fullmatch(name)
+            or name in _COMPARTMENTS
+            or name.startswith(tuple(f"{c}_" for c in (*_COMPARTMENTS, "second_obj")))
+            or any(str(o).startswith(f"{name}_") for o in specs)
+        ):
+            issues.append(Issue(
+                severity="HIGH", code="SECOND_OBJ_NAME_INVALID",
+                message=f"secondary object name `{name}` is not accepted by brieflow",
+                suggestion="Use lowercase snake_case, not cell/nucleus/cytoplasm or a name "
+                           "starting with one of them, second_obj_ or another name plus '_'",
+            ))
+        merged = {**shared, **(spec or {})}
+        for guard in surface.accepted_value_guards:
+            value = merged.get(guard["key"])
+            if isinstance(value, str) and value not in guard["accepted"]:
+                issues.append(Issue(
+                    severity="HIGH", code="CONFIG_VALUE_NOT_ACCEPTED",
+                    message=f"`phenotype.second_objs.{name}.{guard['key']}: {value}` "
+                            f"not in accepted set {guard['accepted']}",
+                    file=guard["file"], line=guard["line"],
+                    suggestion=f"Set `{guard['key']}` for `{name}` to one of: "
+                               + ", ".join(guard["accepted"]),
+                ))
+        if merged.get("second_obj_mode", "segment") not in ("segment", "count"):
+            issues.append(Issue(
+                severity="HIGH", code="SECOND_OBJ_MODE_INVALID",
+                message=f"`{name}` has second_obj_mode {merged.get('second_obj_mode')!r}",
+                suggestion="Use segment (measure each object) or count (spots per cell)",
+            ))
+        derived_from = (spec or {}).get("from")
+        if derived_from is not None:
+            earlier = list(specs)[: list(specs).index(name)]
+            sources = [s for v in (derived_from or {}).values() for s in (v or [])]
+            if set(derived_from or {}) not in ({"overlap"}, {"parent_minus"}) or not sources \
+                    or any(s not in earlier for s in sources):
+                issues.append(Issue(
+                    severity="HIGH", code="SECOND_OBJ_FROM_INVALID",
+                    message=f"`{name}.from` must be overlap or parent_minus over objects "
+                            f"defined before it ({earlier})",
+                    suggestion="List the source objects earlier in second_objs",
+                ))
+            continue
+        index = merged.get("second_obj_channel_index")
+        if not isinstance(index, int) or (n_channels and not 0 <= index < n_channels):
+            issues.append(Issue(
+                severity="HIGH", code="SECOND_OBJ_CHANNEL_INVALID",
+                message=f"`{name}` has second_obj_channel_index {index!r}, "
+                        f"not a channel of {n_channels}",
+                suggestion="Give each object the channel it is segmented in",
+            ))
+    return issues
+
+
 def validate_config(
     config_path: Path,
     surface: BrieflowSurface,
@@ -517,6 +591,9 @@ def validate_config(
                     ),
                 )
             )
+
+    # 1b. Named secondary objects: each spec merged over the flat keys meets the same guards.
+    issues.extend(validate_second_objs(config, surface))
 
     # 2. Required-key validation. brieflow's pattern is mostly
     # `snakemake.params.X` where X is set in the rule's params: block from

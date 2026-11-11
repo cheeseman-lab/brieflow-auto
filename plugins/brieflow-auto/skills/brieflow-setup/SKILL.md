@@ -279,6 +279,9 @@ location onto the VM:
 
 A blank `raw_design_table_fp` is a hard stop — ask the operator; never guess.
 
+A goudacell export named by `phenotype.segmentation_overrides` travels the same way, next to
+`screen.yaml` at the relative path it names.
+
 ### Raw data staging (S8 on the VM, step 3 on an existing host): the agent's job
 
 The raw data must be in the layout brieflow reads before anything runs. Getting it there is
