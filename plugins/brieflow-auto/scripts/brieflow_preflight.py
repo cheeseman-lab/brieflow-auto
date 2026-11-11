@@ -477,6 +477,25 @@ def validate_second_objs(config: dict, surface: BrieflowSurface) -> list[Issue]:
                     suggestion=f"Set `{guard['key']}` for `{name}` to one of: "
                                + ", ".join(guard["accepted"]),
                 ))
+        if merged.get("second_obj_mode", "segment") not in ("segment", "count"):
+            issues.append(Issue(
+                severity="HIGH", code="SECOND_OBJ_MODE_INVALID",
+                message=f"`{name}` has second_obj_mode {merged.get('second_obj_mode')!r}",
+                suggestion="Use segment (measure each object) or count (spots per cell)",
+            ))
+        derived_from = (spec or {}).get("from")
+        if derived_from is not None:
+            earlier = list(specs)[: list(specs).index(name)]
+            sources = [s for v in (derived_from or {}).values() for s in (v or [])]
+            if set(derived_from or {}) not in ({"overlap"}, {"parent_minus"}) or not sources \
+                    or any(s not in earlier for s in sources):
+                issues.append(Issue(
+                    severity="HIGH", code="SECOND_OBJ_FROM_INVALID",
+                    message=f"`{name}.from` must be overlap or parent_minus over objects "
+                            f"defined before it ({earlier})",
+                    suggestion="List the source objects earlier in second_objs",
+                ))
+            continue
         index = merged.get("second_obj_channel_index")
         if not isinstance(index, int) or (n_channels and not 0 <= index < n_channels):
             issues.append(Issue(

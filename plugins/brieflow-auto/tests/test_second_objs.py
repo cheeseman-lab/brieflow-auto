@@ -130,6 +130,25 @@ def test_preflight_checks_each_named_object():
     assert pf.validate_second_objs({"phenotype": phenotype}, _guards()) == []
 
 
+def test_preflight_checks_count_mode_and_derived_objects():
+    phenotype = {"channel_names": CHANNELS}
+    good = {"phenotype": {**phenotype, "second_obj_channel_index": 2, "second_objs": {
+        "foci": {"second_obj_mode": "count"},
+        "dna": {"second_obj_channel_index": 0},
+        "both": {"from": {"overlap": ["foci", "dna"]}},
+        "rest": {"from": {"parent_minus": ["foci", "dna"]}},
+    }}}
+    assert pf.validate_second_objs(good, _guards()) == []
+
+    bad = {"phenotype": {**phenotype, "second_obj_channel_index": 2, "second_objs": {
+        "early": {"from": {"overlap": ["late"]}},
+        "late": {"second_obj_mode": "tally"},
+        "odd": {"from": {"union": ["late"]}},
+    }}}
+    codes = sorted(i.code for i in pf.validate_second_objs(bad, _guards()))
+    assert codes == ["SECOND_OBJ_FROM_INVALID", "SECOND_OBJ_FROM_INVALID", "SECOND_OBJ_MODE_INVALID"]
+
+
 def _canonical_phenotype() -> Path | None:
     d = os.environ.get("BRIEFLOW_CANONICAL_NB_DIR")
     p = Path(d) / "2_phenotype.py" if d else None
